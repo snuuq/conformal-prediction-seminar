@@ -22,11 +22,11 @@
 
 > 추석, 중간고사 일정을 반영해 간격을 조정했습니다. 추후 진도 사항에 따라 일정이 변경될 수 있습니다.
 
-## 📋 세미나 규칙
+## 세미나 규칙
 
 - (필수) **매주 내용 읽기**
-- (필수) **토요일까지** 주차 Issue에 질문 한개 이상 작성
-- 주기적으로 Issue 에서 질답하기
+- (필수) **토요일까지** 주차 [Discussion](https://github.com/snuuq/conformal-prediction-seminar/discussions)에 질문 한개 이상 작성
+- 주기적으로 Discussion 에서 토의하기
 - 해당 주차 담당자의 경우 **요약 발표 자료 작성**
 
 ## 사용법
@@ -70,7 +70,7 @@ git push origin main
 - [박성우](https://github.com/cos18)
 - [박성희](https://github.com/SungheePark-Stat21)
 - [변희준](https://github.com/ryanb01)
-- 윤다연
+- [윤다연](https://github.com/Dayeon-Yoon)
 - [이혜림](https://github.com/2hyerim)
 - [최윤서](https://github.com/cys0220)
 
