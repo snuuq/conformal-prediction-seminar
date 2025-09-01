@@ -7,20 +7,20 @@
 
 | 주차  | 일자       | 내용                                                     | 담당자 |
 | --- | -------- | ------------------------------------------------------ | --- |
-| 1주  | 08. 25. | Ch2. Exchangeability and Permutations                  | 윤다연 |
+| 1주  | 08. 25.  | Ch2. Exchangeability and Permutations                  | 윤다연 |
 | 2주  | 09. 01.   | Ch3. Conformal Prediction Under Exchangeability        | 이혜림 |
-| 3주  | 09. 08.   | Ch4. Conditional Coverage                              | 박성희 |
-| 4주  | 09. 15.   | Ch5. A Model-Based Perspective on Conformal Prediction | 변희준 |
-| 5주  | 09. 22.   | Ch6. Cross-Validation Based Conformal Methods          | 최윤서 |
-| 6주  | 09. 29.   | Ch7. Weighted Variants of Conformal Prediction         | 김지광 |
-| 7주  | 10. 13.   | Ch8. Online Conformal Prediction                       | 박성우 |
-| 8주  | 10. 27.   | Ch9. Additional Results in Conformal Prediction        | 이혜림 |
-| 9주  | 11. 03.   | Ch10. Extensions of Conformal Prediction               | 변희준 |
-| 10주 | 11. 10.   | Ch11. Inference on the Regression Function             | 최윤서 |
-| 11주 | 11. 17.   | Ch12. Calibration                                      | 김지광 |
-| 12주 | 11. 24.   | Ch13. Conditional Independence Testing                 | 박성우 |
+| 3주  | 09. 15.   | Ch4. Conditional Coverage                              | 박성희 |
+| 4주  | 09. 29.   | Ch5. A Model-Based Perspective on Conformal Prediction | 변희준 |
+| 5주  | 10. 13.   | Ch6. Cross-Validation Based Conformal Methods          | 최윤서 |
+| 6주  | 10. 27.   | Ch7. Weighted Variants of Conformal Prediction         | 김지광 |
+| 7주  | 11. 03.   | Ch8. Online Conformal Prediction                       | 박성우 |
+| 8주  | 11. 17.   | Ch9. Additional Results in Conformal Prediction        | 이혜림 |
+| 9주  | 12. 01.   | Ch10. Extensions of Conformal Prediction               | 변희준 |
+| 10주 | 12. 15.   | Ch11. Inference on the Regression Function             | 최윤서 |
+| 11주 | 12. 22.   | Ch12. Calibration                                      | 김지광 |
+| 12주 | 12. 29.   | Ch13. Conditional Independence Testing                 | 박성우 |
 
-> 추석, 중간고사 일정을 반영해 간격을 조정했습니다. 추후 진도 사항에 따라 일정이 변경될 수 있습니다.
+> 추석, 학사 일정을 반영해 간격을 조정했습니다. 추후 진도 사항에 따라 일정이 변경될 수 있습니다.
 
 ## 세미나 규칙
 
