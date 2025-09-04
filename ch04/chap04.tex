@@ -1,0 +1,424 @@
+%----------------------------------------------------------------------------
+% Unofficial LaTex beamer theme for Seoul National University
+%
+% 
+%----------------------------------------------------------------------------
+
+\documentclass[compress]{beamer}
+\usepackage{beamerthemeshadow}
+\usetheme{snubeam}
+\usepackage{snucode}
+\input{macros}
+
+
+\begin{document}
+\title{Chap. 4: Conditional Coverage}
+\author{Sunghee Park}
+\institute{
+	Dept. of Statistics\\
+    Seoul National University}
+\date{September 16, 2025}
+
+{
+% \usebackgroundtemplate{\includegraphics[width=\paperwidth]{images/snu-shift}}
+\begin{frame}[plain]
+  \titlepage
+\end{frame}
+}
+
+\begin{frame}\frametitle{Table of contents}
+    \tableofcontents
+\end{frame}
+
+\section{Introduction}
+\begin{frame}\frametitle{Conditional Coverage of the Conformal Prediction}
+	\begin{itemize}
+		\item We have already guaranteed the marginal coverage of the conformal prediction.
+		\begin{align*}
+			1-\alpha \le \mathbb{P}(Y_{n+1}\in \mathcal{C}(X_{n+1}))
+		\end{align*}
+		\item This chapter focuses on the conditional coverage, which is $\mathbb{P}(Y_{n+1}\in \mathcal{C}(X_{n+1})|W)$ and satisfies the equation below:
+		\begin{align*}
+			\mathbb{E}[\mathbb{P}(Y_{n+1}\in \mathcal{C}(X_{n+1})|W)] = \mathbb{P}(Y_{n+1}\in \mathcal{C}(X_{n+1}))
+		\end{align*}
+		
+		\item However, that relationship doesn't guarantee 
+		\begin{align*}
+			1-\alpha \le \mathbb{P}(Y_{n+1}\in \mathcal{C}(X_{n+1})) \Rightarrow 1-\alpha \le \mathbb{P}(Y_{n+1}\in \mathcal{C}(X_{n+1})|W)
+		\end{align*}
+		\textbf{AT ALL.}
+	\end{itemize}
+\end{frame}
+
+\begin{frame}\frametitle{What this chapter will cover}
+	Recall that the conditional coverage is $\mathbb{P}(Y_{n+1}\in \mathcal{C}(X_{n+1})|W)$.\\
+	This chapter will cover	
+	\begin{itemize}
+		\item Training-conditional coverage ($W$ is related to $\mathcal{D}$)
+		\item Test-conditional coverage ($W$ is related to $X_{n+1}$)
+		\item and others...
+	\end{itemize}
+\end{frame}
+
+\section{Training-conditional coverage}
+\begin{frame}\frametitle{Goals and Assumptions}
+	The goal is to make $\mathbb{P}(Y_{n+1}\in \mathcal{C}(X_{n+1})|\cD) > 1-\alpha$ almost surely.\\
+
+	For some theoretical support of the conditional coverage, we need to make strong assumptions.
+	\begin{itemize}
+		\item We assume split conformal prediction. Which means that the score $s((x, y); \mathcal{D})$ and $\mathcal{D}$ are independent.
+		\item The data points are i.i.d
+	\end{itemize}
+	If then, we can conclude Theorem 4.1 below.
+	\begin{block}{Theorem 4.1. Distribution of the training conditional coverage}
+		With previous assumptions,
+		\begin{align*}
+			&\mathbb{P}\left( 
+			\mathbb{P}(Y_{n+1} \in \mathcal{C}(X_{n+1}) \mid \mathcal{D}_n) 
+			\leq 1 - \alpha - \Delta 
+			\right) 
+			\\&\leq F_{\text{Beta}((1-\alpha)(n+1),\, \alpha(n+1))}(1 - \alpha - \Delta) 
+			\leq e^{-2n\Delta^2},
+		\end{align*}
+	\end{block}
+\end{frame}
+
+\begin{frame}\frametitle{Sketch of the proof of Theorem 4.1}
+	\begin{itemize}
+		\item Let $s(X, Y) \sim F$ (CDF), $(X, Y)\sim P$, $S_i \sim F$ (i.i.d)
+		\item By the algorihm of the CP, we can induce that
+		\begin{align*}
+			Y_{n+1}\in \mathcal{C}(X_{n+1}) \Leftrightarrow S_{n+1}\le S_{(k)} ~~(k = \lceil(1-\alpha)(n+1)\rceil)
+		\end{align*}
+		and
+		\begin{align*}
+			\P(Y_{n+1}\in\cC(X_{n+1})\mid \cD_n) = \P(S_{n+1}\leq S_{(k)}\mid \cD_n) = F(S_{(k)})
+		\end{align*}
+		\item Since $S_{i}\sim F$, by using the basic property of CDF (sim. as Probability integral transform), $F(S_i) \sim U_i$ and F preserves the order, (monotone increase)
+		$F(S_{(i)}) \sim U_{(i)}$,\newline
+		Let $U_i \sim U[0, 1]$ (i.i.d)
+		\begin{align*}
+			\P\big(F(S_{(k)})\leq 1-\alpha-\Delta\big) = \P\big(U_{(k)} \leq 1-\alpha-\Delta\big) \\
+			\leq \P\big(U^*_{(k)}\leq 1-\alpha-\Delta\big) = F_{\text{Beta}((1-\alpha)(n+1),\, \alpha(n+1))}(1 - \alpha - \Delta)
+		\end{align*}
+		holds since the property of Beta distribution. 
+	\end{itemize}
+\end{frame}
+
+\begin{frame}\frametitle{The meaning of Theorem 4.1}
+	\begin{block}{Theorem 4.1. Distribution of the training conditional coverage}
+		With previous assumptions,
+		\begin{align*}
+			&\mathbb{P}\left( 
+			\mathbb{P}(Y_{n+1} \in \mathcal{C}(X_{n+1}) \mid \mathcal{D}_n) 
+			\leq 1 - \alpha - \Delta 
+			\right) 
+			\\&\leq F_{\text{Beta}((1-\alpha)(n+1),\, \alpha(n+1))}(1 - \alpha - \Delta) 
+			\leq e^{-2n\Delta^2},
+		\end{align*}
+	\end{block}
+	\begin{itemize}
+		\item This theorem implies when we choose $\alpha'$ for CP, which is 'stricter' then $\alpha$, we can make
+		\begin{align*}
+			\P\left(\P\left(Y_{n+1} \not\in \cC\left(X_{n+1}\right) \big| \: \cD_n\right)\le \alpha \ \right) \ge 1- \delta
+		\end{align*}
+		\item In detail, we can choose $\alpha'$ as:
+		\begin{align*}
+			F_{\textnormal{Beta}((1-\alpha')(n+1),\alpha'(n+1))}(1-\alpha)  = \delta
+		\end{align*}
+		\item It no longer guarantee in only the 'exchangeable' data (c.f. marginal case)
+	\end{itemize}
+\end{frame}
+
+
+
+\begin{frame}\frametitle{Hardness result for training-conditional coverage}
+	Actually, it is impossible to fully guarantee training
+	conditional coverage for \underline{full conformal prediction}
+	\begin{block}{Theorem 4.3. Hardness result for training-conditional coverage}
+		Let $P$ be any distribution on $\mathcal{X\times Y}$ s.t. $P_x$ is nonatomic*, there exists symmetric conformal score ftn $s$ s.t. when running full conformal prediction with this choice
+ of $s$,
+		\begin{align*}
+			\mathbb{P}\left(\mathbb{P}(Y_{n+1}\in \mathcal{C}(X_{n+1})|\mathcal{D}_n) = 0\right)\ge \alpha - O\left(\sqrt{\dfrac{\log n}{n}}\right)
+		\end{align*}
+		where the probability is taken with respect to the training set $\cD_n=((X_1,Y_1),\dots,(X_n,Y_n))$ drawn i.i.d.\ from $P$.
+	\end{block}
+	*nonatomic $\Leftrightarrow \text{atom}(P) = \{z|\P_{P}(z)>0\} = \emptyset$
+\end{frame}
+
+\begin{frame}\frametitle{Sketch of the proof of Theorem 4.3}
+	\begin{itemize}
+		\item Constructive Proof
+		\item Since $P$ is nonatomic, $\exists a : \cX \rightarrow \{0, 1, ..., n - 1\}$ with $a(X)$ has a equal prob. in domain when $X\sim P$
+		\item For dataset $\cD = ((x_1,y_1),\dots,(x_k,y_k))$ and an additional data point $(x,y)$, Consider
+		\begin{align*}
+			s\big((x,y);\cD\big) = \ind{\textnormal{mod}\left( -a(x) + \sum_{j=1}^k a(x_j)  , n \right) < N}
+		\end{align*}
+		\item This score has quite useful properties in the proof:
+		\begin{itemize}  
+			\item Its domain is $\{0, 1\}$ - Simply think coverage fail only $S_{n+1}=1 \land \hat{q} = 0 \Rightarrow \alpha_P (\cD_n ) = \P(S_{n+1} = 1, \hat{q}=0|\cD_n)$
+			\item $S_{n+1} = s\big((X_{n+1},Y_{n+1});\cD_{n+1}\big) = \ind{\textnormal{mod}\left(  \sum_{i=1}^n a(X_i)  , n \right) < N}$ (ftn unrelated to test point)
+		\end{itemize}
+		\item Define $\cE_{\textnormal{mod}}$ as the event that $\textnormal{mod}\left(\sum_{i=1}^n a(X_i)  , n \right) < N$. 
+	\end{itemize}
+\end{frame}
+
+\begin{frame}\frametitle{Sketch of the proof of Theorem 4.3 (Cont')}
+	\begin{itemize}
+		\item Let $\alpha_P(\cD_n) := \P(Y_{n+1} \notin \cC(X_{n+1}) \mid \cD_n) = \indsub{\cE_{\textnormal{mod}}}\cdot \P\left( \quantile\left(S_1,\dots,S_{n+1};1-\alpha\right)=0\mid \cD_n\right)$ 
+		\item Using Sliding Window Method : Let $W_k = \big\{i\in \{0,\dots,n-1\} : \textnormal{mod}(-i + k - 1 , n )\geq N\big\}$, let $\cE_{\textnormal{unif}}$ be the event that
+\begin{equation*}\sum_{i=1}^n\ind{a(X_i)\in W_k} \geq (1-\alpha)(n+1)\textnormal{ for all integers $k$},\end{equation*}
+i.e., each window of indices $W_k$ contains a sufficient fraction of the sample.
+		\item $S_i = \ind{a(X_i)\notin W_{1 + \sum_j a(X_j)}}$ and by the property of $\cE_{\textnormal{unif}}$.
+		\small
+		\begin{align*}
+			\P\left(\alpha_P(\cD_n)=1\right) \geq \P\left(\cE_{\textnormal{mod}}\cap \cE_{\textnormal{unif}}\right) \geq \P\left(\cE_{\textnormal{mod}}\right) -  \P\left(\cE_{\textnormal{unif}}^c\right)= \frac{N}{n} - \P\left(\cE_{\textnormal{unif}}^c\right)
+		\end{align*}
+		\normalsize
+		\item Make upper bound of $\P(\cE_{\textnormal{mod}})$ using tail-prob. of Binomial dist. and set $N = \alpha n - O(n \log n)$
+	\end{itemize}
+\end{frame}
+
+\section{Test-conditional coverage}
+\begin{frame}
+	\frametitle{Goals}
+	The goal is to make $\mathbb{P}(Y_{n+1}\in \mathcal{C}(X_{n+1})|X_{n+1}) > 1-\alpha$ almost surely.\\ 
+\end{frame}
+
+\begin{frame}\frametitle{CP satisfying conditional coverage on discrete $X$}
+	
+	\begin{alertblock}{CP satisfying conditional coverage on discrete $X$}
+		\begin{itemize}
+		\item Suppose that  $\cX = \{x_1, x_2, ..., x_{|\cX|}\}$ then 
+		 $\cC(x_k) = \{y : s(x_k, y)\le \hat{q_k}\}$ where
+			$\hat{q}_k = \quantile\left((S_i)_{i\in [n], X_i = x_k} ; (1-\alpha)(1+1/n_k)\right)$\\
+		\item Similar to the naive CP, but now, we choose the quantile in a smaller group which has same $X$ value.
+		\end{itemize}
+	\end{alertblock}
+	\begin{itemize}
+		\item This will make the similar result to the naive CP when the dist. of $s(X, Y)|X=x_i$ are similar.
+		\item The detailed proof will be discussed later.
+	\end{itemize}
+\end{frame}
+
+\begin{frame}\frametitle{CP satisfying conditional coverage on continuous $X$}
+	\begin{itemize}
+		\item Actually, there is no "nice" prediction method which satisfying the conditional coverage on continuous $X$ almost surely.
+		\begin{block}{Theorem 4.4.}
+			Suppose $\cC$ is any procedure  that satisfies distribution-free conditional coverage, i.e., for any distribution $P$ on $\cX\times\cY$, 
+			$\P\big(Y_{n+1}\in\cC(X_{n+1})\mid X_{n+1}\big)\geq 1-\alpha$
+			holds almost surely, \\
+			where the probability is taken with respect to $(X_1,Y_1),\cdots,(X_{n+1},Y_{n+1})\iidsim P$.
+			\\Then, for any distribution $P$ on $\cX\times\cY$ for which the marginal $P_X$ is nonatomic, 
+			$\P\big(y\in \cC(x)\big)\geq 1-\alpha\textnormal{ for every $(x,y)\in\cX\times\cY$}$
+		\end{block}
+	\end{itemize}
+\end{frame}
+
+\begin{frame}\frametitle{Sketch of the proof of Theorem 4.4}
+	\begin{itemize}
+		\item For all $(x, y)\in\cX\times\cY$ and $\epsilon>0$\\
+		\item Using "Distridution-Free" feature of $\cC$, Define a mixture dist.
+		$P' = (1-\epsilon)P+\epsilon\delta_{(x, y)}$\\
+		\item Since $\P_{P'}(X_{n+1}=x) > 0$, by assumption, $\P_{P'}\big(Y_{n+1}\in\cC(X_{n+1})\mid X_{n+1}=x\big)\geq 1-\alpha$
+		\item Moreover, $P_X$ is nonatomic from the assumption,\\ 
+		$\P_{P'}(Y_{n+1}=y|X_{n+1}=x) = 1$ and
+		$\P_{P'}\big(y\in\cC(X_{n+1})\mid X_{n+1} = x\big) = \P_{P'}\big(y\in\cC(x)\big) \geq 1-\alpha$
+		\item We can conclude
+		\\$\P_{P}\big(y\in\cC(x)\big)\ge \P_{P'}\big(y\in\cC(x)\big)-d_{TV}(P^n, P'^{n})\ge 1-\alpha-n\epsilon$
+	\end{itemize}
+\end{frame}
+
+\begin{frame}\frametitle{CP satisfying conditional coverage on continuous $X$ (Cont.)}
+	\begin{block}{Corollary 4.5. Lebesgue measure limitations of the continuous case.}
+		Suppose $\cC$ is any procedure that satisfies distribution-free conditional coverage, i.e., for any distribution $P$ on $\cX\times\cY$,
+		\begin{align*}
+			\P\big(\textnormal{Leb}(\cC(x)) = \infty\big)\geq 1-\alpha
+		\end{align*}
+		where Leb(·) denotes the Lebesgue measure.
+	\end{block}
+\end{frame}
+
+\begin{frame}\frametitle{Proof of Corollary 4.5.}
+	\begin{itemize}
+		\item By definition of Lebesque measure,
+		\small
+		\begin{align*}
+			\textnormal{Leb}(\cC(x)) &= \int_{\mathbb{R}} \ind{y\in\cC(x)} dy\leq a \Longrightarrow \int_{y=0}^{a+b}\ind{y\in\cC(x)}\;\mathsf{d}y\leq a \\
+			&\Longleftrightarrow \int_{y=0}^{a+b}\ind{y\not\in\cC(x)}\;\mathsf{d}y\geq b.
+		\end{align*}
+		\normalsize
+		\item Apply Markov's Inequality and Fubini's thm,
+		\small
+		\begin{align*}
+			\P\left(\textnormal{Leb}(\cC(x))\leq a\right) \leq \P\left(\int_{y=0}^{a+b}\ind{y\not\in\cC(x)}\;\mathsf{d}y\geq b\right) \\
+			 \leq \frac{\E\left[\int_{y=0}^{a+b}\ind{y\not\in\cC(x)}\;\mathsf{d}y\right]}{b} = \frac{\int_{y=0}^{a+b}\P(y\not\in\cC(x))\;\mathsf{d}y}{b} \leq \frac{(a+b)\alpha}{b}
+		\end{align*}
+		\normalsize
+		\item Take $b\rightarrow \infty$ and $a\rightarrow \infty$ in order
+	\end{itemize}
+\end{frame}
+
+\section{Relaxation Approach on test-conditional coverage}
+\begin{frame}\frametitle{Relaxation Approach on test-conditional coverage}
+	\begin{itemize}
+		\item So far, we concluded that it is impossible to achieve pointwise test-conditional coverage in continuous setting.
+		\item One of the idea is relaxing the problem to discrete version - which is easily available.
+		\item New goal:
+		$1-\alpha \le \mathbb{P}(Y_{n+1}\in \mathcal{C}(X_{n+1})|\cX_k)$ for $k \in [K]]$ with $P(\cX_k) > 0$
+	\end{itemize}
+
+	\begin{alertblock}{CP satisfying new goal (Binned Conditional Coverage)}
+		\begin{itemize}
+			\item $\cC(X_{n+1}) = \{y : s(X_{n+1}, y)\le \hat{q_{k(X_{n+1})}}\}$ where
+				$\hat{q}_k = \quantile\left((S_i)_{i\in [n], X_i \in \cX_k} ; (1-\alpha)(1+1/n_k)\right)$\\
+			\item Similar to the naive CP, but now, we choose group-(score) quantile $\cX_i$
+		\end{itemize}
+	\end{alertblock}
+\end{frame}
+
+\begin{frame}\frametitle{Label-conditional coverage}
+	\begin{itemize}
+		\item Goal : to make $\mathbb{P}(Y_{n+1}\in \mathcal{C}(X_{n+1})|Y_{n+1}) > 1-\alpha$ almost surely
+	\end{itemize}
+	\begin{alertblock}{CP satisfying the goal (Label-conditional coverage)}
+		\begin{itemize}
+			\item $\cC(X_{n+1}) = \{y : S_{n+1}^y \le \hat{q}^y\}$ where $\hat{q}^y = \quantile\left((S_i)_{i\in{\cI_y}} ; (1-\alpha)(1+1/|\cI_y|)\right),\ \cI_y = \{i\in[n]:Y_i = y\}$
+			\item Similar to the naive CP, but now, we group by y
+		\end{itemize}
+	\end{alertblock}
+\end{frame}
+
+\begin{frame}\frametitle{Mondrian CP : Generalized CP}
+	\begin{itemize}
+		\item Binned Conditional Coverage ($g(x, y) = k~(x\in\cX_k)$) and Label-conditional coverage ($g(x, y) = y$) are the special cases.
+		\item General Goals : to make $\mathbb{P}(Y_{n+1}\in \mathcal{C}(X_{n+1})|g(X_{n+1}, Y_{n+1})) \ge 1-\alpha$ w.p.1
+	\end{itemize}
+	\begin{alertblock}{Mondrian Conformal Prediction}
+		\begin{itemize}
+			\item $\cC(X_{n+1}) = \{y : S_{n+1}^y \le \hat{q}^y\}$ where $\hat{q}^y = \quantile\left((S_i)_{i\in{\cI_{g(X_{n+1}, y)}}} ; (1-\alpha)(1+1/|\cI_{g(X_{n+1}, y)}|)\right)$, $\cI_k = \{i\in[n]:g(X_i, Y_i) = k\}$
+			\item CP with 'Grouping'
+		\end{itemize}
+	\end{alertblock}
+\end{frame}
+
+\begin{frame}\frametitle{Proof of the validity of Mondrian CP}
+	\begin{itemize}
+		\item First, we should show the statement below holds.
+	\end{itemize}
+	\begin{block}{Lemma 4.7. Conditional exchangeability within a bin}
+		Suppose $(X_1,Y_1),\dots,(X_{n+1},Y_{n+1})$ are exchangeable. Fix any subset $\cZ_0\subseteq\cX\times\cY$, and for any fixed nonempty subset $I\subseteq[n+1]$, let $\cE_I$ be the event that $\{i \in[n+1]: (X_i,Y_i)\in\cZ_0\} = I$. If $\cE_I$ has positive probability, then $((X_i,Y_i))_{i\in I}$ is exchangeable conditional on $\cE_I$.
+	\end{block}
+	\begin{itemize}
+		\item The key of the proof is that for arbitrary $\sigma \in perm(I)$, think the extended permutation $\tilde{\sigma} \in perm([n+1])$ which satisfies the following equation and apply the exchangeablilty in $[n+1]$ wisely to show $\P((Z_i)_{i\in I}\in A, \ \cE_I) =\P((Z_{\sigma(i)})_{i\in I}\in A, \ \cE_I)$
+		\begin{align*}
+			\tilde{\sigma}(i) = \begin{cases}
+				\sigma(i)&i\in I\\
+				i&i\notin I
+			\end{cases}
+		\end{align*}
+	\end{itemize}
+\end{frame}
+
+
+
+\begin{frame}\frametitle{Proof of the validity of Mondrian CP (Cont')}
+	\begin{itemize}
+		\item Then, we prove the main theorem.
+		\item First, by construction of the set $\cC(X_{n+1})$, we can see that for any $k\in[K]$, on the event $g(X_{n+1},Y_{n+1})=k$, 
+		\small{\begin{equation*}\label{eqn:conformal-via-pvalues_for_mondrian}Y_{n+1}\in \cC(X_{n+1}) \Longleftrightarrow \bar{p}:=\frac{1+\sum_{i\in[n],g(X_i,Y_i) = k}\ind{S_i\geq S_{n+1}}}{1+|\cI_k|} >  \alpha\end{equation*}}
+		
+		\item Next, fix any label $k\in[K]$ with $\P(g(X_{n+1},Y_{n+1})=k)>0$, and let $\cZ_0 = \{(x,y)\in\cX \times\cY: g(x,y)=k\} \subseteq \cX\times \cY$. By Lemma, the quantity
+		\[p = \frac{1+\sum_{i\in[n]}\ind{(X_i,Y_i)\in\cZ_0,S_i\geq S_{n+1}}}{1+\sum_{i\in[n]}\ind{(X_i,Y_i)\in\cZ_0}} = \bar{p}\]
+		satisfies $\P(p\leq \alpha\mid g(X_{n+1},Y_{n+1})=k)\leq \alpha$.\\ 
+		This completes the proof.
+	\end{itemize}
+	
+\end{frame}
+
+
+\begin{frame}\frametitle{Another Relaxation on test-conditional coverage}
+	\begin{itemize}
+		\item Another idea relaxing the problem is to weaken the condition of $X$.
+		\item New goal:
+		$\label{eqn:test_conditional_relax_alpha_delta}\P\big(Y_{n+1}\in\cC(X_{n+1})\mid X_{n+1}\in\cX_0\big)\geq 1-\alpha\textnormal{ for all $P$, and all $\cX_0\subseteq\cX$ with $P_X(\cX_0)\geq \delta$}.$
+		\item Trivial Solution : much more strict target "Marginal coverage level" and use randomization
+		\begin{alertblock}{CP satisfying new goal}
+			\begin{enumerate}
+				\item Construct $\cC'(X_{n+1})$, using any method that guarantees marginal coverage at level $1-c\alpha\delta$.
+				\item With probability $\frac{1-\alpha}{1-c\alpha}$, return $\cC(X_{n+1}) = \cC'(X_{n+1})$; otherwise, return $\cC(X_{n+1}) = \varnothing$.
+			\end{enumerate}
+		\end{alertblock}
+	\end{itemize}
+\end{frame}
+
+\begin{frame}\frametitle{Prove of the previous method}
+	\begin{itemize}
+		\item By construction of the method, we have
+		\begin{align*}
+			&\P(Y_{n+1}\in\cC(X_{n+1})\mid X_{n+1}\in \cX_0) \\
+			&=\frac{1-\alpha}{1-c\alpha} \P(Y_{n+1}\in\cC'(X_{n+1})\mid X_{n+1}\in \cX_0)
+		\end{align*}
+		\item Next
+		\begin{align*}
+			&\P(Y_{n+1}\not\in\cC'(X_{n+1})\mid X_{n+1}\in\cX_0) \\ &\le \delta^{-1} \P(Y_{n+1}\not\in\cC'(X_{n+1}))\indsub{X_{n+1}\in \cX_0} \le
+			\delta^{-1} \cdot c\alpha \delta = c\alpha
+		\end{align*}
+		
+		Combining these two calculations proves the result.
+	\end{itemize}
+\end{frame}
+
+\begin{frame}\frametitle{Lower bound of the CI length in prev. method}
+	\begin{block}{Definition : $L_P$}
+		\small let $L_P(1-t)$ be the minimum length of any \emph{oracle} prediction interval  $\cC^P_{1-t}$ which is constructed given knowledge of the distribution $P$ (i.e., not a distribution-free method), and has coverage level $1-t$:
+		\begin{align*}\label{eqn:L_P_def}L_P(1-t) = \inf\{ \E_P[\textnormal{Leb}(\cC^P_{1-t}(X))] \ : \\
+			\textnormal{ $\cC^P_{1-t}$ satisfies }\P_P(Y\in \cC^P_{1-t}(X))\geq 1-t\}.\end{align*}
+	\end{block}
+
+	\begin{block}{Theorem 4.13. Lower Bound of CI-length of the $\cC$}
+		Suppose $\cC$ satisfies the distribution-free relaxed test-conditional coverage condition, and let $\cY=\R$. Then, for any distribution $P$ on $\cX\times\R$ for which the marginal $P_X$ is nonatomic,
+		\small\[\E[\textnormal{Leb}(\cC(X_{n+1}))] \geq \inf_{c\in[0,1]} \left\{\frac{1-\alpha}{1-c\alpha} \cdot L_P(1-c\alpha\delta)\right\}.\] 
+	\end{block}
+\end{frame}
+
+\begin{frame}\frametitle{Lower bound of the CI length in prev. method (Cont.)}
+	\begin{itemize}
+		\item to prove the previous theorem, we need some lemmas.
+	\end{itemize}
+	\begin{block}{Lemma 4.14}
+		\small Suppose $\cC$ satisfies the distribution-free relaxed test-conditional coverage condition. Let $P$ be any distribution on $\cX\times\cY$ s.t the marginal $P_X$ is nonatomic, then\\
+		$\P_P\big(Y_{n+1}\in \cC(X_{n+1})\mid (X_{n+1},Y_{n+1})\in B\big) \geq 1-\alpha$\\
+		for any $B\subseteq\cX\times\cY$ with $P(B)\geq \delta$
+	\end{block}
+\end{frame}
+\begin{frame}\frametitle{Lower bound of the CI length in prev. method (Cont.)}
+	\begin{itemize}
+		\item to prove the previous theorem, we need some lemmas.
+	\end{itemize}
+	\begin{block}{Lemma 4.15. The sample–resample construction}
+		\small Let $P$ be a distribution on $\cZ$, and let $m,M\geq 1$. Let $P^m$ denote the corresponding product distribution on $\cZ^m$---that is, the distribution of $(Z_1,\dots,Z_m)$, where $Z_1,\dots,Z_m\iidsim P$. Moreover, let $Q$ denote the distribution on $\cZ^m$ obtained by the following process to generate $(Z_1,\dots,Z_m)$:
+		\begin{enumerate}
+			\item Sample $Z^{(1)},\dots,Z^{(M)}\iidsim P$, and define the empirical distribution $\widehat{P}_M = \frac{1}{M}\sum_{i=1}^M \delta_{Z^{(i)}}$;
+			\item Sample $Z_1,\dots,Z_m\iidsim \widehat{P}_M$.
+		\end{enumerate}
+		Then
+		\[\dtv\big(P^m,Q\big) \leq \frac{m(m-1)}{2M},\]
+		where $\dtv$ denotes the total variation distance between distributions.
+	\end{block}
+\end{frame}
+
+
+\begin{frame}\frametitle{}
+    \vfill
+    \begin{center}
+        \begin{Huge}Thank you!\end{Huge}
+    \end{center}
+    \vfill
+\end{frame}
+
+\begin{frame}[t, allowframebreaks]\frametitle{References}
+    \nocite{*} % FIXME: this includes all references in ref.bib
+    \bibliography{ref}
+\end{frame}
+\end{document}
