@@ -3,7 +3,7 @@
 
 ## 일정표
 
-매주 월요일 저녁 6시 반에 진행됩니다.
+학기중엔 격주 월요일 저녁 5시에 진행됩니다.
 
 | 주차  | 일자       | 내용                                                     | 담당자 |
 | --- | -------- | ------------------------------------------------------ | --- |
@@ -25,7 +25,7 @@
 ## 세미나 규칙
 
 - (필수) **매주 내용 읽기**
-- (필수) **토요일까지** 주차 [Discussion](https://github.com/snuuq/conformal-prediction-seminar/discussions)에 질문 한개 이상 작성
+- (필수) **세미나 전주 수요일까지** 주차 [Discussion](https://github.com/snuuq/conformal-prediction-seminar/discussions)에 질문 한개 이상 작성
 - 주기적으로 Discussion 에서 토의하기
 - 해당 주차 담당자의 경우 **요약 발표 자료 작성**
 
