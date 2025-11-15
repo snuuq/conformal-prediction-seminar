@@ -1,0 +1,130 @@
+\documentclass[compress]{beamer}
+\usepackage{beamerthemeshadow}
+\usetheme{snubeam}
+\usepackage{snucode}
+
+\newcommand{\Dn}{\mathcal{D}_n}
+\newcommand{\Dt}{\mathcal{D}_t}
+\newcommand{\Ct}{\mathcal{C}_t}
+\newcommand{\hatP}{\hat{P}}
+\newcommand{\eps}{\varepsilon}
+\newcommand{\indicator}[1]{\mathbb{1}\{#1\}}
+
+\begin{document}
+\title{Ch 8. Online Conformal Prediction}
+\author{Sungwoo Park}
+\institute{
+    Uncertainty Quantification Lab\\
+    Seoul National University}
+\date{November 17th, 2025}
+
+{
+% \usebackgroundtemplate{\includegraphics[width=\paperwidth]{images/snu-shift}}
+\begin{frame}[plain]
+  \titlepage
+\end{frame}
+}
+
+\begin{frame}\frametitle{Table of contents}
+    \tableofcontents
+\end{frame}
+
+\section{Introduction}
+
+\begin{frame}\frametitle{Motivation: From Batch to Online}
+\begin{block}{Batch Setting (Previous Chapters)}
+\begin{itemize}
+\item Training dataset $\Dn = \{(X_1, Y_1), \ldots, (X_n, Y_n)\}$ collected first
+\item Train conformal prediction on this dataset
+\item Provide predictive inference on future test points
+\item Data is fixed and static
+\end{itemize}
+\end{block}
+
+\begin{block}{Online Setting (This Chapter)}
+\begin{itemize}
+\item Observe data points \textbf{sequentially}
+\item At time $t$: observed $(X_1, Y_1), \ldots, (X_{t-1}, Y_{t-1})$ and $X_t$
+\item Need to construct prediction set $\Ct(X_t)$ for $Y_t$
+\item At time $t+1$: add $(X_t, Y_t)$ to dataset and repeat
+\end{itemize}
+\end{block}
+
+\vspace{0.1cm}
+\textbf{Key Challenges:} Multiple prediction sets, data reuse, potentially shifting distributions
+\end{frame}
+
+\section{Online CP with Exchangeable Data}
+
+\begin{frame}{Setting and Goal}
+\begin{block}{Setup}
+\begin{itemize}
+\item Sequence of data points $(X_1, Y_1), (X_2, Y_2), \ldots, (X_T, Y_T)$ that are \textbf{exchangeable}
+\item At each time step $t$: have seen $(X_1, Y_1), \ldots, (X_{t-1}, Y_{t-1})$ and $X_t$
+\item Score function $s$ (symmetric)
+\end{itemize}
+\end{block}
+
+\begin{block}{Goal}
+Construct prediction set $\Ct(X_t)$ for $Y_t$ with correct coverage:
+\[
+\mathbb{P}(Y_t \in \Ct(X_t)) \geq 1 - \alpha
+\]
+\end{block}
+\end{frame}
+
+\begin{frame}{Setting and Goal}
+\begin{block}{Approach}
+Apply \textbf{full conformal prediction} (Algorithm 3.3) at each time step:
+\begin{itemize}
+\item Training data: $(X_1, Y_1), \ldots, (X_{t-1}, Y_{t-1})$
+\item Test point: $X_t$
+\item At $t=1$: zero training points $\Rightarrow$ $C_1(X_1) = \mathcal{Y}$ (uninformative but well-defined)
+\end{itemize}
+\end{block}
+\end{frame}
+
+\begin{frame}{Miscoverage Events}
+\begin{definition}[Miscoverage Indicator]
+\[
+\text{err}_t = \begin{cases}
+1 & \text{if } Y_t \notin \Ct(X_t) \\
+0 & \text{if } Y_t \in \Ct(X_t)
+\end{cases}
+\]
+\end{definition}
+
+\begin{block}{Basic Marginal Coverage}
+From Theorem 3.2 (validity of conformal prediction):
+\[
+\mathbb{E}[\text{err}_t] \leq \alpha \quad \text{for all } t
+\]
+\end{block}
+
+\vspace{0.3cm}
+
+\textbf{Question:} Does average coverage $\frac{1}{T}\sum_{t=1}^T \text{err}_t$ concentrate around $1-\alpha$?
+
+\textbf{Challenge:} Each data point $t$ is reused in constructing $C_{t'}$ for all $t' > t$ $\Rightarrow$ coverage events appear to be dependent in complex ways.
+\end{frame}
+
+\section{Conclusion}
+\begin{frame}\frametitle{Conclusion}
+	\begin{itemize}
+		\item 안녕
+	\end{itemize}
+\end{frame}
+
+\begin{frame}\frametitle{}
+    \vfill
+    \begin{center}
+        \begin{Huge}Thank you!\end{Huge}
+    \end{center}
+    \vfill
+\end{frame}
+
+\begin{frame}[t, allowframebreaks]\frametitle{References}
+    \nocite{*} % FIXME: this includes all references in ref.bib
+    \bibliography{ref}
+\end{frame}
+\end{document}
