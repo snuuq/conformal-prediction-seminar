@@ -2,13 +2,14 @@
 \usepackage{beamerthemeshadow}
 \usetheme{snubeam}
 \usepackage{snucode}
+\usepackage{dsfont}
 
 \newcommand{\Dn}{\mathcal{D}_n}
 \newcommand{\Dt}{\mathcal{D}_t}
 \newcommand{\Ct}{\mathcal{C}_t}
 \newcommand{\hatP}{\hat{P}}
 \newcommand{\eps}{\varepsilon}
-\newcommand{\indicator}[1]{\mathbb{1}\{#1\}}
+\newcommand{\indicator}[1]{\mathds{1}\{#1\}}
 
 \begin{document}
 \title{Ch 8. Online Conformal Prediction}
@@ -31,81 +32,347 @@
 
 \section{Introduction}
 
-\begin{frame}\frametitle{Motivation: From Batch to Online}
+\begin{frame}{From Batch to Online Setting}
 \begin{block}{Batch Setting (Previous Chapters)}
 \begin{itemize}
-\item Training dataset $\Dn = \{(X_1, Y_1), \ldots, (X_n, Y_n)\}$ collected first
-\item Train conformal prediction on this dataset
-\item Provide predictive inference on future test points
-\item Data is fixed and static
+    \item Train on dataset $\Dn = \{(X_1, Y_1), \ldots, (X_n, Y_n)\}$
+    \item Provide inference on future test points
+    \item One-time prediction
 \end{itemize}
 \end{block}
 
 \begin{block}{Online Setting (This Chapter)}
 \begin{itemize}
-\item Observe data points \textbf{sequentially}
-\item At time $t$: observed $(X_1, Y_1), \ldots, (X_{t-1}, Y_{t-1})$ and $X_t$
-\item Need to construct prediction set $\Ct(X_t)$ for $Y_t$
-\item At time $t+1$: add $(X_t, Y_t)$ to dataset and repeat
+    \item Observe data points \textbf{sequentially}
+    \item At time $t$: observed $(X_1, Y_1), \ldots, (X_{t-1}, Y_{t-1})$ and $X_t$
+    \item Construct prediction set $\Ct(X_t)$ for $Y_t$
+    \item Add $(X_t, Y_t)$ to dataset and repeat
 \end{itemize}
 \end{block}
+\end{frame}
 
-\vspace{0.1cm}
-\textbf{Key Challenges:} Multiple prediction sets, data reuse, potentially shifting distributions
+\begin{frame}{Online Prediction Illustration}
+\begin{center}
+\begin{figure}
+	\includegraphics[width = 10cm]{images/fig-1-online-settings.png}
+\end{figure}
+\end{center}
+\small Figure 1: Online prediction loop — observe \(X_t\), produce \(\Ct(X_t)\), reveal \(Y_t\), and update the dataset. \cite{Angelopoulos2024-pf}
+\end{frame}
+
+\begin{frame}{New Challenges in Online Setting}
+\begin{enumerate}
+    \item \textbf{Data Reuse:} Each data point is used multiple times
+    \begin{itemize}
+        \item $(X_t, Y_t)$ is a test point at time $t$
+        \item $(X_t, Y_t)$ becomes training data for times $t' > t$
+    \end{itemize}
+    
+    \item \textbf{Multiple Prediction Sets:} Constructing many prediction sets over time
+    \begin{itemize}
+        \item Need coverage guarantees for each $C_t(X_t)$
+        \item Need long-run average coverage guarantees
+    \end{itemize}
+    
+    \item \textbf{Distribution Shift:} Distributions may change over time
+    \begin{itemize}
+        \item Exchangeability may not hold
+        \item Need robust methods for non-stationary data
+    \end{itemize}
+\end{enumerate}
+\end{frame}
+
+\begin{frame}{Q1: Why Study Sequences of Prediction Sets?}
+\begin{alertblock}{Question}
+\(X_1, X_2, X_3, \cdots, X_t\) 로부터 score function을 이용하여 \(C(X_t)\)을 구성하는 Conformal Prediction Flow에서 Online Comformal Prediction을 통한 추정구간의 열을 구하는 것이 실질적으로 의미가 있는 것인지 알고 싶습니다.
+\end{alertblock}
+
+\begin{block}{Answer}
+    \begin{itemize}
+        \item Online Data의 특성상 열로의 관찰이 필요함
+        \item Corollary 8.3에서 제시된 수렴성을 확인할 수 있음
+        \item Supermartingale의 특징을 활용해 이상치 관측 가능
+    \end{itemize}
+\end{block}
+\end{frame}
+
+\begin{frame}{Online Data Examples}
+\begin{exampleblock}{Example 1: Medical ICU Monitoring}
+\begin{itemize}
+    \item Patient vital signs measured every hour
+    \item Need prediction interval for next hour's blood pressure
+    \item \textbf{Can't wait} to collect all 24 hours of data before making first prediction
+    \item Need sequence: $C_1(X_1), C_2(X_2), \ldots, C_{24}(X_{24})$
+    \item If coverage fails repeatedly, may indicate patient deterioration
+\end{itemize}
+\end{exampleblock}
+
+\begin{exampleblock}{Example 2: Algorithmic Trading}
+\begin{itemize}
+    \item Stock price predictions every minute
+    \item Trading decisions based on prediction intervals
+    \item Need to detect when market regime changes (Section 8.2 test)
+    \item Online conformal adapts to volatility changes (Section 8.3)
+\end{itemize}
+\end{exampleblock}
+\end{frame}
+
+\begin{frame}{Q2: Can We Use Split Conformal Online?}
+\begin{alertblock}{Question}
+Online conformal prediction은 Split conformal에는 적용할 수 없나요? 만약 적용할 수 있다면 어떤 방식으로 매 시점의 예측집합을 만드나요?
+\end{alertblock}
+
+\begin{block}{Answer: Maybe... NO}
+Split Conformal에서는 Training set과 Calibration set이 나누어지는데, 이를 고정시켜 prediction을 하기에 연속성이 중요한 Online setting에서는 적합하지 않다고 생각합니다.
+\end{block}
 \end{frame}
 
 \section{Online CP with Exchangeable Data}
 
-\begin{frame}{Setting and Goal}
-\begin{block}{Setup}
+\begin{frame}{Setup: Exchangeable Sequences}
+\begin{block}{Assumptions}
 \begin{itemize}
-\item Sequence of data points $(X_1, Y_1), (X_2, Y_2), \ldots, (X_T, Y_T)$ that are \textbf{exchangeable}
-\item At each time step $t$: have seen $(X_1, Y_1), \ldots, (X_{t-1}, Y_{t-1})$ and $X_t$
-\item Score function $s$ (symmetric)
+    \item Sequence $(X_1, Y_1), (X_2, Y_2), \ldots, (X_T, Y_T)$ is \textbf{exchangeable}
+    \item At time $t$: observed $(X_1, Y_1), \ldots, (X_{t-1}, Y_{t-1})$ and $X_t$
+    \item Goal: construct $\Ct(X_t)$ with coverage
+    $$\mathbb{P}(Y_t \in \Ct(X_t)) \geq 1 - \alpha$$
 \end{itemize}
 \end{block}
 
-\begin{block}{Goal}
-Construct prediction set $\Ct(X_t)$ for $Y_t$ with correct coverage:
-\[
-\mathbb{P}(Y_t \in \Ct(X_t)) \geq 1 - \alpha
-\]
-\end{block}
-\end{frame}
-
-\begin{frame}{Setting and Goal}
-\begin{block}{Approach}
-Apply \textbf{full conformal prediction} (Algorithm 3.3) at each time step:
+\begin{block}{Algorithm}
+Apply full conformal prediction (Algorithm 3.3) at each step:
 \begin{itemize}
-\item Training data: $(X_1, Y_1), \ldots, (X_{t-1}, Y_{t-1})$
-\item Test point: $X_t$
-\item At $t=1$: zero training points $\Rightarrow$ $C_1(X_1) = \mathcal{Y}$ (uninformative but well-defined)
+    \item Training data: $(X_1, Y_1), \ldots, (X_{t-1}, Y_{t-1})$
+    \item Test point: $X_t$
+    \item Score function: $s$ (symmetric)
 \end{itemize}
 \end{block}
 \end{frame}
 
 \begin{frame}{Miscoverage Events}
-\begin{definition}[Miscoverage Indicator]
-\[
-\text{err}_t = \begin{cases}
-1 & \text{if } Y_t \notin \Ct(X_t) \\
-0 & \text{if } Y_t \in \Ct(X_t)
-\end{cases}
-\]
-\end{definition}
-
-\begin{block}{Basic Marginal Coverage}
-From Theorem 3.2 (validity of conformal prediction):
-\[
-\mathbb{E}[\text{err}_t] \leq \alpha \quad \text{for all } t
-\]
+\begin{block}{Definition}
+Define the miscoverage indicator at time $t$:
+$$\text{err}_t := \indicator{Y_t \notin \Ct(X_t)}$$
 \end{block}
 
-\vspace{0.3cm}
+From Theorem 3.2(Marginal Coverage), we know:
+$$\mathbb{E}[\text{err}_t] \leq \alpha \quad \text{for all } t$$
 
-\textbf{Question:} Does average coverage $\frac{1}{T}\sum_{t=1}^T \text{err}_t$ concentrate around $1-\alpha$?
+\begin{alertblock}{Question}
+Does marginal coverage imply good \textbf{average coverage}?
+$$\frac{1}{T}\sum_{t=1}^T \text{err}_t \approx \alpha \; ?$$
+\end{alertblock}
+\end{frame}
 
-\textbf{Challenge:} Each data point $t$ is reused in constructing $C_{t'}$ for all $t' > t$ $\Rightarrow$ coverage events appear to be dependent in complex ways.
+\begin{frame}{Online Prediction Guarantee}
+\begin{block}{Proposition 8.1: Independence of Errors}
+Suppose $(X_1, Y_1), (X_2, Y_2), \ldots, (X_T, Y_T)$ are exchangeable, the score function $s$ is symmetric, and the scores are distinct almost surely at each time $t$. Then the miscoverage events $\text{err}_t$ are \textbf{mutually independent}.
+\end{block}
+
+\begin{itemize}
+    \item Each data point reused in constructing $C_{t'}$ for all $t' > t$
+    \item Despite complex data reuse, errors are independent!
+\end{itemize}
+
+\end{frame}
+
+\begin{frame}{Online Prediciton Guarantee : Conformal p-values}
+\begin{block}{Definition (8.3)}
+The conformal p-value at time $t$ is:
+$$p_t = \frac{\sum_{i=1}^t \indicator{s((X_i, Y_i); \Dt) \geq s((X_t, Y_t); \Dt)}}{t}$$
+where $\Dt = ((X_1, Y_1), \ldots, (X_t, Y_t))$.
+\end{block}
+
+\begin{block}{Theorem 8.2: Independence of Online Conformal p-values}
+Under the same assumptions, $p_t$ is distributed as a discrete random variable on $\{1/t, 2/t, \ldots, 1\}$, and $p_1, \ldots, p_T$ are \textbf{mutually independent}.
+\end{block}
+
+We can easily check that $\text{err}_t = \indicator{p_t \leq \alpha}$ (Proposition 3.9), so Proposition 8.1 follows from Theorem 8.2.
+\end{frame}
+
+\begin{frame}{Proof Intuition (Theorem 8.2)}
+
+\textbf{Key Idea:}
+\begin{itemize}
+    \item By symmetry of score function, $p_{t+1}$ does not depend on \textit{ordering} of $Z_1, \ldots, Z_t$
+    \item $Z_1, \ldots, Z_t$ still exchangeable when conditioning on $p_{t+1}$
+    \item But $p_t$ depends \textit{only} on ordering of first $t$ points
+    \item This leads to independence!
+\end{itemize}
+
+
+\textbf{Proof Strategy:}
+\begin{enumerate}
+    \item Show: $p_t | (\hat{P}_t, Z_{t+1}, \ldots, Z_T) \sim \text{Unif}(\{1/t, \ldots, 1\})$
+    \item Show: For $t' > t$, $p_{t'}$ is a function of $(\hat{P}_t, Z_{t+1}, \ldots, Z_T)$
+    \item Combine: $p_t | (p_{t+1}, \ldots, p_T) \sim \text{Unif}(\{1/t, \ldots, 1\})$
+    \item Therefore: $p_1, \ldots, p_T$ are independent
+\end{enumerate}
+where $\hat{P}_t = \frac{1}{t}\sum_{i=1}^t \delta_{Z_i}$ is empirical distribution.
+\end{frame}
+
+\begin{frame}{Average Coverage Guarantee}
+\begin{block}{Corollary 8.3: Average Coverage of Online Conformal}
+Suppose $(X_1, Y_1), (X_2, Y_2), \ldots$ are exchangeable, the score function is symmetric, and the scores are distinct almost surely at each time $t$. Then:
+$$\frac{1}{T}\sum_{t=1}^T \indicator{Y_t \in C_t(X_t)} \to 1 - \alpha \text{ as } T \to \infty \text{ a.s.}$$
+
+\end{block}
+
+\begin{block}{Proof Sketch}
+\begin{itemize}
+    \item By Proposition 8.1: $\text{err}_1, \text{err}_2, \ldots$ are independent
+    \item Each $\mathbb{E}[\text{err}_t] \in (\alpha - 1/t, \alpha]$ (minor variation)
+    \item Apply Law of Large Numbers
+    \item Can refine with Hoeffding's inequality for finite-sample bounds
+\end{itemize}
+\end{block}
+\end{frame}
+
+\begin{frame}{Without Distinct Scores Assumption}
+
+If we don't assume distinct scores:
+\begin{itemize}
+    \item p-values $p_t$ may no longer be independent
+    \item Conformal prediction becomes more conservative with ties
+    \item Conservative version of Corollary 8.3 still holds
+\end{itemize}
+
+\begin{block}{Corollary 8.3 doesn't hold}
+If $(X_1, Y_1), (X_2, Y_2), \ldots$ are exchangeable ONLY, then:
+$$\liminf_{T \to \infty} \frac{1}{T}\sum_{t=1}^T \indicator{Y_t \in C_t(X_t)} \geq 1 - \alpha \text{ a.s.}$$
+\end{block}
+\end{frame}
+
+\begin{frame}{Online Conformal Without Online Training?}
+\begin{block}{Note}
+Throughout Section 8.1, we assumed:
+\begin{itemize}
+    \item At time $t$: $(X_t, Y_t)$ is the test point
+    \item At time $t+1$ (and beyond): $(X_t, Y_t)$ is part of training set
+\end{itemize}
+\end{block}
+
+\begin{block}{Alternative Setting}
+Sometimes not possible/desirable to add test data to training set:
+\begin{itemize}
+    \item Fix training set: $\{(X_i, Y_i)\}_{i \in [n]}$
+    \item Test points $t = n+1, n+2, \ldots$ all compared to same training set
+    \item Conformal p-values $p_{n+1}, p_{n+2}, \ldots$ will be \textbf{dependent}
+    \item See Chapter 10.2 for analysis of this dependence
+\end{itemize}
+\end{block}
+\end{frame}
+
+\section{Testing Exchangeability Online}
+
+\begin{frame}{Motivation: Detecting Distribution Shift}
+\begin{block}{Why Test Exchangeability?}
+\begin{itemize}
+    \item Monitor online deployment of learning algorithms
+    \item Identify presence of distribution shift
+    \item Especially harmful shifts that affect algorithm errors
+    \item Early detection of changepoints
+\end{itemize}
+\end{block}
+
+\begin{block}{Main Idea}
+\begin{itemize}
+    \item Use conformal p-values from definition (8.3)
+    \item Combine them into a \textbf{supermartingale}
+    \item Under exchangeability: statistic stays small
+    \item Large values = evidence against exchangeability
+\end{itemize}
+\end{block}
+\end{frame}
+
+\begin{frame}{Supermartingales}
+\begin{block}{Definition 8.4: Supermartingale}
+A sequence $M_1, M_2, \ldots$ is a \textbf{supermartingale} if for all $t$:
+\begin{enumerate}
+    \item $\mathbb{E}[|M_t|] < \infty$
+    \item $\mathbb{E}[M_t | M_1, \ldots, M_{t-1}] \leq M_{t-1}$ for all $t \geq 2$
+\end{enumerate}
+\end{block}
+
+\begin{itemize}
+    \item Sequence whose \textit{conditional expectation} is getting no larger over time
+    \item If equality in inequality 2: \textbf{martingale}
+    \item Supermartingales tend to take small values
+\end{itemize}
+\end{frame}
+
+\begin{frame}{Q3: Examples of Supermartingales}
+\begin{alertblock}{Question}
+Supermartingale의 예시를 몇 가지만 더 들어주실 수 있나요?
+\end{alertblock}
+
+\begin{exampleblock}{Example 1: Fair Game \cite{durrett}}
+\begin{itemize}
+    \item Gambler starts with wealth $M_0 = w$
+    \item At each time $t$: bet \$1, win with prob $1/2$, lose with prob $1/2$
+    \item Wealth: $M_t = M_{t-1} + X_t$ where $X_t \in \{-1, +1\}$ with equal probability
+    \item This is a \textbf{martingale} : $\mathbb{E}[M_t | M_1, \ldots, M_{t-1}] = M_{t-1} + \mathbb{E}[X_t] = M_{t-1}$
+\end{itemize}
+\end{exampleblock}
+\end{frame}
+
+\begin{frame}{Q3: Examples of Supermartingales (cont.)}
+\begin{exampleblock}{Example 2: Unfavorable Game \cite{durrett}}
+\begin{itemize}
+    \item Same setup, but now win with prob $p < 1/2$, lose with prob $1-p$
+    \item $\mathbb{E}[M_t | M_1, \ldots, M_{t-1}] = M_{t-1} + p - (1-p) = M_{t-1} + (2p-1) < M_{t-1}$
+    \item This is a \textbf{supermartingale} (unfavorable game)
+    \item Wealth tends to decrease over time
+\end{itemize}
+\end{exampleblock}
+
+\begin{exampleblock}{Example 3: Stopped Martingale \cite{durrett}}
+\begin{itemize}
+    \item Let $M_1, M_2, \ldots$ be a martingale
+    \item Define stopping time $T$ (e.g., first time $M_t \geq$ threshold)
+    \item Stopped process: $M_t^{T} = M_{\min(t, T)}$
+    \item Then $M_t^{T}$ is a \textbf{supermartingale}
+\end{itemize}
+\end{exampleblock}
+\end{frame}
+
+\begin{frame}{Q3: Examples of Supermartingales (cont.)}
+\begin{exampleblock}{Example 4: Non-negative Submartingale Reciprocal}
+\begin{itemize}
+    \item If $M_t$ is a non-negative submartingale: $\mathbb{E}[M_t | \mathcal{F}_{t-1}] \geq M_{t-1}$
+    \item Then $N_t = 1/M_t$ is a supermartingale (by Jensen's inequality)
+\end{itemize}
+\end{exampleblock}
+
+\begin{exampleblock}{Example 5: Product of Independent Superuniform RVs}
+\begin{itemize}
+    \item Let $U_1, U_2, \ldots$ be independent, superuniform (i.e., $\mathbb{P}(U_t \leq u) \leq u$)
+    \item Define $M_t = \prod_{i=1}^t (1/U_i)$
+    \item Then $M_t$ is a supermartingale
+    \item \textbf{This is the type used in Proposition 8.5!}
+\end{itemize}
+\end{exampleblock}
+\end{frame}
+
+\begin{frame}{Q4: Understanding Supermartingales}
+\begin{alertblock}{Question}
+Supermartingale은 교환가능성이 성립할 때 작아진다는 것과, Supermartingale의 평균이 시간이 흐름에 따라 더 커지지 않는다는 게 이해가 잘 안 갑니다.
+\end{alertblock}
+
+\begin{block}{Answer: Supermartingale is defined on conditional expectation}
+\textbf{Supermartingale does NOT mean:}
+\begin{itemize}
+    \item $M_t < M_{t-1}$ always (deterministically decreasing)
+    \item $M_t$ cannot increase
+\end{itemize}
+
+\textbf{Supermartingale DOES mean:}
+\begin{itemize}
+    \item $\mathbb{E}[M_t | \text{past}] \leq M_{t-1}$ (expected to not increase)
+    \item Individual realizations can go up or down
+    \item But the "drift" is downward (or flat for martingales)
+\end{itemize}
+\end{block}
 \end{frame}
 
 \section{Conclusion}
