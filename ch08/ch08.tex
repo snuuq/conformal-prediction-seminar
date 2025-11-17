@@ -285,6 +285,7 @@ Sometimes not possible/desirable to add test data to training set:
 \end{block}
 \end{frame}
 
+\subsection{Supermartingale}
 \begin{frame}{Supermartingales}
 \begin{block}{Definition 8.4: Supermartingale}
 A sequence $M_1, M_2, \ldots$ is a \textbf{supermartingale} if for all $t$:
@@ -294,9 +295,11 @@ A sequence $M_1, M_2, \ldots$ is a \textbf{supermartingale} if for all $t$:
 \end{enumerate}
 \end{block}
 
+\vspace{0.3cm}
+
 \begin{itemize}
     \item Sequence whose \textit{conditional expectation} is getting no larger over time
-    \item If equality in inequality 2: \textbf{martingale}
+    \item If equality in (2): \textbf{martingale}
     \item Supermartingales tend to take small values
 \end{itemize}
 \end{frame}
@@ -359,7 +362,23 @@ Supermartingale의 예시를 몇 가지만 더 들어주실 수 있나요?
 Supermartingale은 교환가능성이 성립할 때 작아진다는 것과, Supermartingale의 평균이 시간이 흐름에 따라 더 커지지 않는다는 게 이해가 잘 안 갑니다.
 \end{alertblock}
 
-\begin{block}{Answer: Supermartingale is defined on conditional expectation}
+\begin{block}{Answer}
+    \begin{itemize}
+        \item Exchangeability $\Rightarrow$ Making supermartingale (Prop 8.5)
+        \item Supermartingale is defined on conditional expectation
+    \end{itemize}
+\end{block}
+\end{frame}
+
+\begin{frame}{Q4: Understanding Supermartingales (cont.)}
+\begin{block}{Recall: Definition of Supermartingale}
+A sequence $M_1, M_2, \ldots$ is a \textbf{supermartingale} if for all $t$:
+\begin{enumerate}
+    \item $\mathbb{E}[|M_t|] < \infty$
+    \item $\mathbb{E}[M_t | M_1, \ldots, M_{t-1}] \leq M_{t-1}$ for all $t \geq 2$
+\end{enumerate}
+\end{block}
+
 \textbf{Supermartingale does NOT mean:}
 \begin{itemize}
     \item $M_t < M_{t-1}$ always (deterministically decreasing)
@@ -372,14 +391,339 @@ Supermartingale은 교환가능성이 성립할 때 작아진다는 것과, Supe
     \item Individual realizations can go up or down
     \item But the "drift" is downward (or flat for martingales)
 \end{itemize}
+\end{frame}
+
+\begin{frame}{Ville's Inequality}
+\begin{block}{Ville's Inequality}
+If $M_1, M_2, \ldots$ is a nonnegative supermartingale, then for any $a > 0$:
+$$\mathbb{P}\left(\sup_{t \geq 1} M_t \geq a\right) \leq \frac{\mathbb{E}[M_1]}{a}$$
+\end{block}
+
+\vspace{0.3cm}
+
+\begin{itemize}
+    \item Stronger than Markov's inequality (which only applies at single time)
+    \item Holds uniformly over all time
+\end{itemize}
+\end{frame}
+
+\subsection{Construct super MG to test exchangeability}
+\begin{frame}{A Simple Supermartingale from p-values}
+\begin{block}{Proposition 8.5}
+Consider conformal p-values $p_1, p_2, \ldots$ defined at (8.3). Let $\lambda \in [0,1]$ be fixed. If scores are distinct a.s. at each time $t$, then:
+$$M_t = \prod_{t'=1}^t \frac{1 - \lambda p_{t'}}{1 - \lambda/2}$$
+is a supermartingale.
+\end{block}
+\begin{block}{Proof Sketch}
+\begin{itemize}
+    \item $M_t = M_{t-1} \cdot \frac{1 - \lambda p_t}{1 - \lambda/2}$
+    \item By Theorem 8.2: $p_t$ is superuniform and independent of $M_1, \ldots, M_{t-1}$
+    \item Therefore: $\mathbb{E}[1 - \lambda p_t | M_1, \ldots, M_{t-1}] \leq 1 - \lambda/2$
+\end{itemize}
 \end{block}
 \end{frame}
 
-\section{Conclusion}
-\begin{frame}\frametitle{Conclusion}
-	\begin{itemize}
-		\item 안녕
-	\end{itemize}
+\begin{frame}{General Recipe for Supermartingales}
+\begin{block}{Theorem 8.6: Online Test for Exchangeability}
+Let $f_t: [0,1] \to [0, \infty)$ be nonincreasing functions with $\int_0^1 f_t(r) dr \leq 1$. Define:
+$$M_t = \prod_{t'=1}^t f_{t'}(p_{t'})$$
+Under exchangeability, symmetric score, and distinct scores:
+\begin{enumerate}
+    \item $M_t$ is a supermartingale
+    \item For any $\alpha \in [0,1]$: $\mathbb{P}\left(\sup_t M_t \geq 1/\alpha\right) \leq \alpha$
+\end{enumerate}
+\end{block}
+\end{frame}
+
+\begin{frame}{Proof Sketch (Theorem 8.6)}
+\textbf{Part 1: $M_t$ is a supermartingale}
+\begin{itemize}
+    \item Using similar flow in Proposition 8.5:
+    \item Since $f_t$ is nonincreasing: $\mathbb{E}[f_t(p_t)] \leq \int_0^1 f_t(r) dr \leq 1$
+    \item Therefore: $\mathbb{E}[M_t | M_1, \ldots, M_{t-1}] = M_{t-1} \cdot \mathbb{E}[f_t(p_t)] \leq M_{t-1}$
+\end{itemize}
+
+\textbf{Part 2: Probability bound}
+\begin{itemize}
+    \item Apply Ville's inequality with $a = 1/\alpha$ and $\mathbb{E}[M_1] = \mathbb{E}[f_1(p_1)] \leq 1$
+\end{itemize}
+\end{frame}
+
+\begin{frame}{Online Test Algorithm}
+\begin{enumerate}
+    \item Choose function \(f_t\) as specified in Theorem 8.6
+    \begin{itemize}
+            \item $f_t(r) = \frac{1-\lambda r}{1-\lambda/2}$ (Proposition 8.5)
+            \item $f_t(r) = 2(1-r)$ (simple choice)
+    \end{itemize}
+    \item For each time \(t = 1, 2, \ldots\):
+    \begin{enumerate}
+        \item Observe \((X_t, Y_t)\) and compute conformal p-value and \(M_t\)
+        \item If \(M_t \geq 1/\alpha\), reject exchangeability at significance level \(\alpha\). Otherwise, continue.
+    \end{enumerate}
+\end{enumerate}
+\end{frame}
+
+\begin{frame}{Visualization of Online Test}
+\begin{center}
+\begin{figure}
+	\includegraphics[width = 10cm]{images/fig-2-online-exchange-test.png}
+\end{figure}
+\end{center}
+\small Figure 2: The online test for exchangeability — Under null (exchangeability): crossing happens with probability \(\leq \alpha\) \cite{Angelopoulos2024-pf}
+\end{frame}
+
+\begin{frame}{Why is Conformal Prediction Critical?}
+\begin{block}{Key Feature: No Multiplicity Penalty}
+\begin{itemize}
+    \item Testing exchangeability at \textit{every} time step $t = 1, 2, 3, \ldots$
+    \item Reusing the same data over and over
+    \item Naively: would need Bonferroni correction $\to$ no power
+    \item \textbf{But}: Independence of conformal p-values (Theorem 8.2)!
+    \item Can test at all times with \textit{single} $\alpha$ level
+\end{itemize}
+\end{block}
+
+\begin{exampleblock}{Example Application}
+\begin{itemize}
+    \item Score: $s((x,y); \mathcal{D}) = y$
+    \item p-value $p_t$ = rescaled rank of $Y_t$ relative to $Y_1, \ldots, Y_{t-1}$
+    \item $M_t$ grows if we frequently observe small $p_t$
+    \item Detects: values of $Y_t$ trending downward
+    \item Application: changepoint detection in error rates
+\end{itemize}
+\end{exampleblock}
+\end{frame}
+
+\subsection{Conformal p-values and E-values}
+\begin{frame}{Q4: Relationship to E-values}
+\begin{alertblock}{Question}
+현재 online CP의 setting과, proposition 8.5. (or Thm 8.6.) 이 제가 생각하기로는 E-value 와 상당히 유사해 보입니다. 둘 사이의 관계에 대해 자세한 설명 부탁드립니다.
+\end{alertblock}
+
+\begin{block}{Answer @ Bibliographic notes}
+In particular, we note that the exchangeability supermartingale in Proposition 8.5 is a special case of an e-value, and these are useful more broadly. \cite{Ruf2023-dy}
+\end{block}
+\end{frame}
+
+\begin{frame}{E-values: A Better Alternative of P-values}
+\begin{block}{Definition: E-value (Evidence Value)}
+A random variable $E \geq 0$ is an \textbf{e-value} for testing $H_0$ if:
+$$\mathbb{E}_{H_0}[E] \leq 1$$
+\end{block}
+
+\textbf{Interpretation:}
+\begin{itemize}
+    \item Under null hypothesis, expected value $\leq 1$
+    \item Large values of $E$ provide evidence against $H_0$
+\end{itemize}
+
+\begin{block}{Testing with E-values}
+For any $\alpha \in (0,1)$, by Markov's inequality:
+$$\mathbb{P}_{H_0}(E \geq 1/\alpha) \leq \frac{\mathbb{E}_{H_0}[E]}{1/\alpha} \leq \alpha$$
+
+\textbf{Decision rule:} Reject $H_0$ if $E \geq 1/\alpha$
+\end{block}
+\end{frame}
+
+\begin{frame}{E-values vs P-values}
+\begin{table}
+\begin{tabular}{|l|c|c|}
+\hline
+\textbf{Property} & \textbf{P-value} & \textbf{E-value} \\
+\hline
+Range & $[0, 1]$ & $[0, \infty)$ \\
+\hline
+Under $H_0$ & Uniform $[0,1]$ & $\mathbb{E}[E] \leq 1$ \\
+\hline
+Evidence direction & Small = evidence & Large = evidence \\
+\hline
+Testing threshold & $p \leq \alpha$ & $E \geq 1/\alpha$ \\
+\hline
+Sequential testing & \textcolor{red}{Problematic} & \textcolor{green}{Natural} \\
+\hline
+Combination & \textcolor{orange}{Complex} & \textcolor{green}{Multiply} \\
+\hline
+\end{tabular}
+\end{table}
+
+\begin{exampleblock}{Converting between them}
+If $p$ is a valid p-value, then $E = 1/p$ is \textbf{NOT} necessarily an e-value.\\
+But if $p$ is \textit{superuniform}: $\mathbb{P}(p \leq u) \leq u$, then for nonincreasing $f$ with $\int_0^1 f(p) dp \leq 1$, we have $E = f(p)$ is an e-value. (proved \cite{Ruf2023-dy})
+\end{exampleblock}
+\end{frame}
+
+\section{Prediction sets for adversarial sequences}
+\begin{frame}{Beyond Exchangeability}
+\begin{block}{Limitations of Exchangeability Assumption}
+\begin{itemize}
+    \item Real data often not exchangeable
+    \item Distributions change over time (concept drift)
+    \item Data might even be deterministic (not random)
+\end{itemize}
+\end{block}
+
+\begin{block}{New Goal: Long-Run Coverage}
+Without distributional assumptions, aim for:
+$$\left|\frac{1}{T}\sum_{t=1}^T \text{err}_t - \alpha\right| \to 0$$
+\begin{itemize}
+    \item Average miscoverage rate $\approx \alpha$
+    \item No assumption of exchangeability or even randomness!
+    \item Works for \textbf{adversarial sequences}
+\end{itemize}
+\end{block}
+\end{frame}
+
+\begin{frame}{Prediction Set Construction}
+\begin{block}{General Form}
+Prediction sets of the form:
+$$\Ct(X_t) = \{y : s_t(X_t, y) \leq q_t\}$$
+where:
+\begin{itemize}
+    \item $s_t$: score function (may depend on previous data)
+    \item $q_t$: threshold (updated online)
+\end{itemize}
+\end{block}
+
+\begin{block}{Connection to Conformal Prediction}
+\begin{itemize}
+    \item \textbf{Split conformal:} $s_t(x,y) = s(x,y)$ (fixed), $q_t = $ quantile
+    \item \textbf{Full conformal:} $s_t(x,y) = s((x,y); \mathcal{D}_{t-1})$, $q_t = $ quantile
+    \item \textbf{Adversarial setting:} Allow arbitrary $s_t$, update $q_t$ online
+\end{itemize}
+\end{block}
+\end{frame}
+
+
+\begin{frame}{Quantile Tracking Algorithm}
+\begin{block}{Update Rule}
+Initialize $q_1 \in [0, B]$ arbitrarily. For $t \geq 2$:
+$$q_{t+1} = q_t + \eta_t(\text{err}_t - \alpha)$$
+where $\eta_t > 0$ is the step size.
+\end{block}
+
+\begin{itemize}
+    \item If $\text{err}_t = 1$ (miscoverage): \textit{increase} $q_{t+1}$ $\to$ more conservative
+    \item If $\text{err}_t = 0$ (coverage): \textit{decrease} $q_{t+1}$ $\to$ less conservative
+    \item Adaptive feedback mechanism
+    \item No distributional assumptions needed!
+\end{itemize}
+\end{frame}
+
+\begin{frame}{Q6: Quantile Tracking Algorithm as Optimization}
+\begin{alertblock}{Question}
+소단원 8.3에서 제시하는 quantile tracking 알고리즘의 update rule (식 8.8)을 보면 형태가 quantile loss에 대한 gradient descent (혹은 gradient ascent)와 닮아 보입니다. 혹시 식 8.8을 어떤 loss function의 최적화 알고리즘으로 생각할 수 있을까요?
+\end{alertblock}
+
+\begin{block}{Answer}
+We can interpret the quantile tracking update as a form of stochastic gradient descent on the quantile loss function.
+\end{block}
+\end{frame}
+
+\begin{frame}{Stochastic Greadient Descent Interpretation}
+    \textbf{Quantile Loss:}
+The $\alpha$-quantile can be found by minimizing:
+$$L_\alpha(q) = \mathbb{E}[\rho_\alpha(Y - q)]$$
+where $\rho_\alpha(u) = u(\alpha - \indicator{u < 0})$ is the "check function" or "pinball loss". Also, we can find \textbf{subgradient} as:
+
+$$\partial_q \rho_\alpha(Y_t - q_t) = \begin{cases}
+-\alpha & \text{if } Y_t > q_t \text{ (coverage, } \text{err}_t = 0) \\
+1-\alpha & \text{if } Y_t < q_t \text{ (miscoverage, } \text{err}_t = 1)
+\end{cases}$$
+\end{frame}
+
+\begin{frame}{Stochastic Greadient Descent Interpretation (cont.)}
+\begin{block}{Connection to SGD}
+The update rule $q_{t+1} = q_t + \eta_t(\text{err}_t - \alpha)$ is exactly:
+$$q_{t+1} = q_t - \eta_t \cdot \partial_q \rho_\alpha(Y_t - q_t)$$
+\end{block}
+
+\textbf{This is stochastic gradient descent on quantile loss!}
+\begin{itemize}
+    \item Objective: track the $\alpha$-quantile of score distribution
+    \item Update: use subgradient based on current observation
+    \item Step size $\eta_t$: learning rate
+\end{itemize}
+\end{frame}
+
+\begin{frame}{Main Result: Deterministic Coverage Guarantee}
+\begin{block}{Theorem 8.7}
+Consider an \textbf{arbitrary} sequence of data points $(X_1, Y_1), (X_2, Y_2), \ldots$ and \textbf{arbitrary} score functions $s_1, s_2, \ldots$ with $s_t(x,y) \in [0,B]$. Let step sizes $\eta_t$ be any nonincreasing positive sequence. Then for all $T \geq 1$:
+$$\frac{1}{T}\sum_{t=1}^T \text{err}_t \in \left[\alpha \pm \frac{B + \eta_1}{\eta_T T}\right]$$
+\end{block}
+
+\begin{itemize}
+    \item \textbf{Deterministic} guarantee (no probability!)
+    \item For constant step size $\eta_t = \eta$: error concentrates at rate $O(1/T)$
+    \item Holds for \textit{any} data sequence and \textit{any} choice of scores
+    \item Works under distribution shift
+\end{itemize}
+\end{frame}
+
+\begin{frame}{Proof Sketch (Theorem 8.7)}
+\textbf{Part 1: The iterates are bounded.}
+
+We can check $q_t \in [-\eta_1\alpha, B + \eta_1(1-\alpha)]$ by contradiction.
+
+\textbf{Part 2: Simultaneous bounds on the weighted coverage gap.}
+$$\left|\sum_{t=T_0}^{T_1} \eta_t(\text{err}_t - \alpha)\right| = |q_{T_1+1} - q_{T_0}| \leq B + \eta_1$$
+
+\textbf{Part 3: Bounding the long-run coverage gap.}
+\end{frame}
+
+\begin{frame}{Visual intuition of boundness}
+\begin{center}
+\begin{figure}
+	\includegraphics[width = 8cm]{images/fig-3-longrun-coverage.png}
+\end{figure}
+\end{center}
+\small Figure 3: The long-run coverage gap — Once trajectory leaves thin envelope (where $q_T$ would be outside $[0,B]$), next prediction forces it back toward $\alpha$. \cite{Angelopoulos2024-pf}
+\end{frame}
+
+
+\begin{frame}{Choice of Step Sizes}
+\begin{block}{Constant Step Size: $\eta_t = \eta$}
+\textbf{Pros:}
+\begin{itemize}
+    \item Fast adaptation to changing score sequences
+    \item Good for highly dynamic systems
+\end{itemize}
+\textbf{Cons:}
+\begin{itemize}
+    \item Quantiles $q_t$ fluctuate wildly
+    \item Many infinite-size sets ($q_t > B$) and empty sets ($q_t < 0$)
+    \item Never converges even in i.i.d. setting
+\end{itemize}
+\end{block}
+\end{frame}
+
+\begin{frame}{Choice of Step Sizes}
+\begin{block}{Decaying Step Size: $\eta_t \propto t^{-(1/2+\epsilon)}$}
+\textbf{Pros:}
+\begin{itemize}
+    \item Stabilizes quantile over time
+    \item Can converge in stationary settings (by previous theorem)
+\end{itemize}
+\textbf{Cons:}
+\begin{itemize}
+    \item Slower adaptation: average error $\sim T^{-(1/2-\epsilon)}$ at time $T$
+\end{itemize}
+\end{block}
+\end{frame}
+
+
+\begin{frame}{I.I.D. Setting: Convergence Results}
+\begin{block}{Theorem 8.8}
+Suppose $(X_t, Y_t) \stackrel{\text{i.i.d.}}{\sim} P$ and scores $s_t$ trained online and $F_s$ is CDF of $s(X,Y)$ under $(X,Y) \sim P$.
+
+\textbf{Constant step size} $\eta_t = \eta$:
+$$\liminf_{t \to \infty} F_{s_t}(q_t) = 0, \quad \limsup_{t \to \infty} F_{s_t}(q_t) = 1$$
+(infinitely many oscillations)
+
+\textbf{Decaying step size} $\eta_t$ with $\sum_t \eta_t = \infty$, $\sum_t \eta_t^2 < \infty$:
+$$\text{If } F_{s_t} \to F \text{ then } F_{s_t}(q_t) \to 1 - \alpha$$
+(convergence to desired coverage)
+\end{block}
 \end{frame}
 
 \begin{frame}\frametitle{}
@@ -391,7 +735,7 @@ Supermartingale은 교환가능성이 성립할 때 작아진다는 것과, Supe
 \end{frame}
 
 \begin{frame}[t, allowframebreaks]\frametitle{References}
-    \nocite{*} % FIXME: this includes all references in ref.bib
+    % \nocite{*}  FIXME: this includes all references in ref.bib
     \bibliography{ref}
 \end{frame}
 \end{document}
