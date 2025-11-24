@@ -15,10 +15,10 @@
 | 6주  | 11. 03.   | Ch7. Weighted Variants of Conformal Prediction         | 김지광 |
 | 7주  | 11. 17.   | Ch8. Online Conformal Prediction                       | 박성우 |
 | 8주  | 12. 01.   | Ch9. Additional Results in Conformal Prediction        | 이혜림 |
-| 9주  | 12. 15.   | Ch10. Extensions of Conformal Prediction               | 변희준 |
-| 10주 | 12. 22.   | Ch11. Inference on the Regression Function             | 최윤서 |
-| 11주 | 12. 29.   | Ch12. Calibration                                      | 김지광 |
-| 12주 | 26. 01. 05.  | Ch13. Conditional Independence Testing                 | 박성우 |
+| 9주  | 12. 22.   | Ch10. Extensions of Conformal Prediction               | 변희준 |
+| 10주 | 12. 29.   | Ch11. Inference on the Regression Function             | 최윤서 |
+| 11주 | 01. 05.   | Ch12. Calibration                                      | 김지광 |
+| 12주 | 01. 12.  | Ch13. Conditional Independence Testing                 | 박성우 |
 
 > 추석, 학사 일정을 반영해 간격을 조정했습니다. 추후 진도 사항에 따라 일정이 변경될 수 있습니다.
 
