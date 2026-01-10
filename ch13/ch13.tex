@@ -1,0 +1,606 @@
+\documentclass[compress]{beamer}
+\usepackage{beamerthemeshadow}
+\usetheme{snubeam}
+\usepackage{snucode}
+\usepackage{dsfont}
+\usepackage{amsmath}
+\usepackage{amssymb}
+
+\newcommand{\hatP}{\hat{P}}
+\newcommand{\eps}{\varepsilon}
+\newcommand{\indicator}[1]{\mathds{1}\{#1\}}
+\newcommand{\indep}{\perp \!\!\! \perp}
+\newcommand{\Sn}{\mathcal{S}_n}
+\newcommand{\calP}{\mathcal{P}}
+\newcommand{\calX}{\mathcal{X}}
+\newcommand{\calY}{\mathcal{Y}}
+\newcommand{\calW}{\mathcal{W}}
+\newcommand{\dH}{d_{\mathrm{H}}}
+\newcommand{\dTV}{d_{\mathrm{TV}}}
+
+\begin{document}
+\title{Ch 13. Conditional Independence Testing}
+\author{Sungwoo Park}
+\institute{
+    Uncertainty Quantification Lab\\
+    Seoul National University}
+\date{January 13th, 2026}
+
+{
+    \begin{frame}[plain]
+        \titlepage
+    \end{frame}
+}
+
+\begin{frame}\frametitle{Table of contents}
+    \tableofcontents
+\end{frame}
+
+\section{Introduction}
+
+\begin{frame}{Conditional Independence Testing: Overview}
+    \begin{block}{Problem Setting}
+        Given i.i.d. samples $(X_i, Y_i, W_i)_{i \in [n]}$, test the null hypothesis:
+        $$H_0: X \indep Y \mid W$$
+        where $W$ is a \textbf{confounder} variable.
+    \end{block}
+
+    \begin{itemize}
+        \item Is the feature $X$ associated with response $Y$ after accounting for $W$?
+        \item Related to \textbf{variable selection} in high-dimensional regression
+              \begin{itemize}
+                  \item Testing $H_{0,j}: X_j \indep Y \mid X_{-j}$ for feature selection
+              \end{itemize}
+    \end{itemize}
+
+\end{frame}
+
+\begin{frame}{Marginal vs. Conditional Independence}
+    \begin{block}{Marginal Independence}
+        $$H_0: X \indep Y$$
+        \begin{itemize}
+            \item No conditioning on any variable
+            \item Does not account for confounding effects of $W$
+            \item \textbf{Easy} to test via permutation tests
+        \end{itemize}
+    \end{block}
+\end{frame}
+
+\begin{frame}{Marginal vs. Conditional Independence}
+    \begin{block}{Conditional Independence}
+        $$H_0: X \indep Y \mid W$$
+        \begin{itemize}
+            \item Must account for the confounder $W$
+            \item \textbf{Easy} when $W$ is discrete (local permutation test)
+            \item \textbf{Hard} (impossible) when $W$ is continuous (hardness result)
+        \end{itemize}
+    \end{block}
+\end{frame}
+
+\begin{frame}{Q\&A: Why is Chapter 13 in This Book?}
+    \begin{alertblock}{Question}
+        Chapter 13 does not seem directly related to conformal prediction. Why is it included in this book?
+    \end{alertblock}
+
+    \begin{block}{Answer}
+        \begin{itemize}
+            \item This chapter demonstrates the broader applications of \textbf{permutation tests} and \textbf{exchangeability}
+            \item The book's core techniques extend beyond conformal prediction:
+                  \begin{itemize}
+                      \item Chapter 2's permutation test framework
+                      \item Chapter 4's test-conditional coverage hardness results
+                      \item Chapter 11-12's binning approaches
+                  \end{itemize}
+            \item Emphasizes the \textbf{unifying theme} of ``distribution-free inference'' and shows how exchangeability-based arguments apply to hypothesis testing
+        \end{itemize}
+    \end{block}
+\end{frame}
+
+\section{Testing Marginal Independence}
+
+\begin{frame}{Setup: Marginal Independence Testing}
+    \begin{block}{Problem Setting}
+        \begin{itemize}
+            \item Data: $(X_1, Y_1), \ldots, (X_n, Y_n) \stackrel{\text{i.i.d.}}{\sim} P$
+            \item Null hypothesis: $H_0: X \indep Y$
+            \item Equivalently: $P \in \calP_{X \indep Y}$ (product distributions)
+        \end{itemize}
+    \end{block}
+
+    \begin{block}{Test Statistic}
+        Any function $T: (\calX \times \calY)^n \to \mathbb{R}$ measuring evidence against $H_0$.
+
+        \textbf{Example (real-valued data):}
+        $$T\big((X_1, Y_1), \ldots, (X_n, Y_n)\big) = \big|\text{Corr}\big((X_1, \ldots, X_n), (Y_1, \ldots, Y_n)\big)\big|$$
+    \end{block}
+\end{frame}
+
+\begin{frame}{Permutation Test for Marginal Independence}
+    \begin{block}{Key Insight}
+        Under $H_0: X \indep Y$, permuting $X_i$'s while fixing $Y_i$'s doesn't change the distribution!
+        $$(X_\sigma, \mathbf{Y}) \stackrel{d}{=} (\mathbf{X}, \mathbf{Y}) \quad \text{for all } \sigma \in \Sn$$
+    \end{block}
+
+    \begin{block}{Notation}
+        \begin{itemize}
+            \item $\mathbf{X} = (X_1, \ldots, X_n)$, $\mathbf{Y} = (Y_1, \ldots, Y_n)$
+            \item $X_\sigma = (X_{\sigma(1)}, \ldots, X_{\sigma(n)})$ for $\sigma \in \Sn$
+        \end{itemize}
+    \end{block}
+\end{frame}
+
+\begin{frame}{Theorem 13.1: Validity of the Permutation Test}
+    \begin{block}{Theorem 13.1}
+        Fix any test statistic $T: (\calX \times \calY)^n \to \mathbb{R}$. Define the test:
+        $$\psi(\mathbf{X}, \mathbf{Y}) = \indicator{\frac{1}{n!}\sum_{\sigma \in \Sn} \indicator{T(X_\sigma, \mathbf{Y}) \geq T(\mathbf{X}, \mathbf{Y})} \leq \alpha}$$
+
+        Then $\psi$ is a \textbf{valid test} of $H_{X \indep Y}$:
+        $$\mathbb{P}_P(\psi(\mathbf{X}, \mathbf{Y}) = 1) \leq \alpha \quad \text{for all } P \in \calP_{X \indep Y}$$
+    \end{block}
+
+    \begin{block}{Proof Idea}
+        \begin{itemize}
+            \item Under $H_0$: $P = P_X \times P_Y$
+            \item Conditioning on $\mathbf{Y}$: $X_1, \ldots, X_n$ remain i.i.d. $\sim P_X$
+            \item Apply Theorem 2.4 (permutation test validity from Chapter 2)
+        \end{itemize}
+    \end{block}
+\end{frame}
+
+\begin{frame}{Q\&A: Alternative Test Statistics}
+    \begin{alertblock}{Question}
+        What are some alternative test statistics $T$ that can be used instead of the absolute Pearson correlation for testing marginal/conditional independence?
+    \end{alertblock}
+
+    \begin{block}{Answer: Alternative Test Statistics}
+        \begin{enumerate}
+            \item \textbf{Spearman's rank correlation}: $|\text{Corr}(\text{rank}(X), \text{rank}(Y))|$
+                  \begin{itemize}
+                      \item Robust to outliers, captures monotonic relationships
+                  \end{itemize}
+            \item \textbf{Distance correlation} (Sz\'{e}kely et al., 2007)
+                  \begin{itemize}
+                      \item Detects nonlinear dependencies, equals zero iff independent
+                  \end{itemize}
+            \item \textbf{HSIC} (Hilbert-Schmidt Independence Criterion)
+                  \begin{itemize}
+                      \item Kernel-based measure of dependence
+                  \end{itemize}
+            \item \textbf{Mutual information estimators}
+                  \begin{itemize}
+                      \item Information-theoretic measure of dependence
+                  \end{itemize}
+        \end{enumerate}
+    \end{block}
+\end{frame}
+
+\section{Conditional Independence with Discrete $W$}
+
+\begin{frame}{Local Permutation Test: Motivation}
+    \begin{block}{Key Idea}
+        When $W$ is discrete, group data points by their $W$ value:
+        \begin{itemize}
+            \item Within each group (same $W = w$): $X$ and $Y$ are \textbf{independent}
+            \item Permute $X$ values \textbf{only within groups}
+            \item This preserves the null distribution!
+        \end{itemize}
+    \end{block}
+
+    \begin{block}{Intuition}
+        \begin{itemize}
+            \item Think of $W$ as defining ``subpopulations''
+            \item Under $H_0: X \indep Y \mid W$, within each subpopulation $X$ and $Y$ are independent
+            \item Same logic as marginal independence test, applied locally
+        \end{itemize}
+    \end{block}
+\end{frame}
+
+\begin{frame}{Local Permutation Test: Definition}
+    \begin{block}{Allowed Permutations}
+        Define the set of permutations that \textbf{preserve $W$ values}:
+        $$\Sn(\mathbf{W}) = \{\sigma \in \Sn : W_{\sigma(i)} = W_i \text{ for all } i \in [n]\}$$
+    \end{block}
+
+    \begin{block}{Test Definition (Equation 13.4)}
+        \begin{align*}
+             & \psi(\mathbf{X}, \mathbf{Y}, \mathbf{W})                                                                                                                                          \\
+             & = \indicator{\frac{1}{|\Sn(\mathbf{W})|}\sum_{\sigma \in \Sn(\mathbf{W})} \indicator{T(X_\sigma, \mathbf{Y}, \mathbf{W}) \geq T(\mathbf{X}, \mathbf{Y}, \mathbf{W})} \leq \alpha}
+        \end{align*}
+    \end{block}
+
+    \begin{itemize}
+        \item Only permute $X$ values among data points with \textit{same} $W$ value
+        \item This is called a ``\textbf{local}'' permutation test
+    \end{itemize}
+\end{frame}
+
+\begin{frame}{Theorem 13.2: Validity of Local Permutation Test}
+    \begin{block}{Theorem 13.2}
+        Fix any test statistic $T: (\calX \times \calY \times \calW)^n \to \mathbb{R}$. Let $(X_i, Y_i, W_i)_{i \in [n]} \stackrel{\text{i.i.d.}}{\sim} P$. Then $\psi$ is a \textbf{valid test} of $H_{X \indep Y | W}$:
+        $$\mathbb{P}_P(\psi(\mathbf{X}, \mathbf{Y}, \mathbf{W}) = 1) \leq \alpha \quad \text{for all } P \in \calP_{X \indep Y | W}$$
+    \end{block}
+
+    \begin{block}{Key Points}
+        \begin{itemize}
+            \item \textbf{Distribution-free}: No assumptions on $P$ (beyond conditional independence)
+            \item \textbf{Test statistic-free}: Works for any choice of $T$
+            \item Proof uses same techniques as Chapter 2 (permutation test validity)
+        \end{itemize}
+    \end{block}
+\end{frame}
+
+\begin{frame}{Proof Sketch: Theorem 13.2}
+    \begin{enumerate}
+        \item Conditional on $\mathbf{W}$ and $\mathbf{Y}$
+
+              Under $H_0: X \indep Y \mid W$, conditioning on $(\mathbf{W}, \mathbf{Y})$:
+              $$X_1, \ldots, X_n \text{ are independent (but not identically distributed)}$$
+              with $X_i \sim P_{X|W}(\cdot | W_i)$.
+
+        \item Exchangeability Within Groups
+
+              For any $\sigma \in \Sn(\mathbf{W})$: since $W_{\sigma(i)} = W_i$,
+              $$(X_\sigma, \mathbf{Y}) \mid \mathbf{W} \stackrel{d}{=} (\mathbf{X}, \mathbf{Y}) \mid \mathbf{W}$$
+
+        \item Apply Permutation Test Logic
+
+              Average over permutations $\sigma \in \Sn(\mathbf{W})$ to get valid p-value.
+    \end{enumerate}
+\end{frame}
+
+\begin{frame}{When is the Local Permutation Test Powerful?}
+    \begin{block}{Factor 1: Number of ``Clashes''}
+        \begin{itemize}
+            \item \textbf{Clashes}: pairs $i \neq j$ with $W_i = W_j$
+            \item Many clashes $\Rightarrow$ rich set of permutations $\Rightarrow$ potential for power
+            \item No clashes (all $W_i$ unique) $\Rightarrow$ $|\Sn(\mathbf{W})| = 1$ $\Rightarrow$ \textbf{no power}
+        \end{itemize}
+    \end{block}
+
+    \begin{block}{Factor 2: Choice of Test Statistic $T$}
+        \begin{itemize}
+            \item $T$ must discriminate between null and alternative
+            \item Standard considerations for hypothesis testing
+        \end{itemize}
+    \end{block}
+
+    \begin{alertblock}{Critical Observation}
+        If $W$ is \textbf{continuous}, all $W_i$'s are distinct a.s. $\Rightarrow$ \textbf{No power!}
+    \end{alertblock}
+\end{frame}
+
+\begin{frame}{Q\&A: How is the Confounder $W$ Determined?}
+    \begin{alertblock}{Question}
+        How is the confounder $W$ typically determined in practice? It seems like finding an appropriate $W$ would be important, and trivial confounders might also exist.
+    \end{alertblock}
+
+    \begin{block}{Answer}
+        \begin{itemize}
+            \item This chapter \textbf{assumes $W$ is given} --- identifying $W$ is a separate problem
+            \item In practice, $W$ selection is crucial:
+                  \begin{itemize}
+                      \item \textbf{Domain knowledge}: Prior understanding of causal relationships
+                      \item \textbf{Variable selection}: In high-dimensional settings, $W = X_{-j}$ (all other variables)
+                      \item \textbf{Causal discovery}: Learn DAG structure to identify confounders
+                  \end{itemize}
+            \item Wrong $W$ choice $\Rightarrow$ spurious association or missed association
+            \item Finding ``appropriate $W$'' is a central topic in \textbf{causal inference}
+        \end{itemize}
+    \end{block}
+\end{frame}
+
+\section{Hardness of Conditional Independence Testing}
+
+\begin{frame}{The Problem with Continuous $W$}
+    \begin{block}{Continuous Confounder Challenge}
+        When $W$ has a \textbf{nonatomic} (continuous) distribution:
+        \begin{itemize}
+            \item $\mathbb{P}(W_i = W_j) = 0$ for $i \neq j$
+            \item No two data points share the same $W$ value
+            \item Local permutation test has no power
+        \end{itemize}
+    \end{block}
+
+    \begin{alertblock}{Question}
+        Can we design \textit{any} valid test with nontrivial power for continuous $W$?
+    \end{alertblock}
+
+    \begin{block}{Answer: NO!}
+        Theorem 13.3 shows this is \textbf{impossible} in a distribution-free setting.
+    \end{block}
+\end{frame}
+
+\begin{frame}{Theorem 13.3: Hardness Result}
+    \begin{block}{Theorem 13.3}
+        If the test $\psi$ has Type I error bounded by $\alpha$ for any distribution:
+        $$\mathbb{P}_P(\psi(\mathbf{X}, \mathbf{Y}, \mathbf{W}) = 1) \leq \alpha \quad \text{for all } P \in \calP_{X \indep Y | W}$$
+
+        Then the \textbf{power} of the test is not better than random for any $P$ with $P_W$ nonatomic:
+        $$\mathbb{P}_P(\psi(\mathbf{X}, \mathbf{Y}, \mathbf{W}) = 1) \leq \alpha \quad \text{for \textbf{all} } P \text{ with } P_W \text{ nonatomic}$$
+    \end{block}
+
+    \begin{alertblock}{Interpretation}
+        For continuous $W$: \textbf{any} valid test has power $\leq \alpha$ (no better than random guessing!)
+    \end{alertblock}
+\end{frame}
+
+\begin{frame}{Proof Sketch: Theorem 13.3}
+    \begin{block}{Key Technique: Sample-Resample (Lemma 4.15)}
+        Same technique as hardness results in Chapters 4, 11, 12!
+    \end{block}
+
+    \begin{enumerate}
+        \item Fix arbitrary sequence $(X^{(i)}, Y^{(i)}, W^{(i)})_{i \in [M]}$ with distinct $W^{(i)}$
+        \item Empirical distribution $\hatP_M = \frac{1}{M}\sum_{i=1}^M \delta_{(X^{(i)}, Y^{(i)}, W^{(i)})}$
+        \item Under $\hatP_M$: $X, Y$ are deterministic functions of $W$
+        \item $\Rightarrow$ Trivially $X \indep Y \mid W$ under $\hatP_M$!
+        \item Valid test must have $\mathbb{P}_{\hatP_M}(\psi = 1) \leq \alpha$
+        \item By Lemma 4.15: this extends to any $P$ with nonatomic $P_W$
+    \end{enumerate}
+\end{frame}
+
+\begin{frame}{Connection to Previous Hardness Results}
+    \begin{block}{Recurring Theme in the Book}
+        \textbf{Discrete case}: Distribution-free inference is possible (Chapter 4.3, 11.3, 13.2)
+
+        \textbf{Continuous case}: Distribution-free inference faces fundamental limits (Chapter 4.4, 11.4, 13.3)
+    \end{block}
+
+    \begin{block}{Same Proof Technique}
+        \begin{itemize}
+            \item Chapter 4: Test-conditional coverage
+            \item Chapter 11: Distribution-free regression
+            \item Chapter 12: ECE calibration
+            \item Chapter 13: Conditional independence testing
+        \end{itemize}
+        All use the \textbf{sample-resample lemma} (Lemma 4.15)!
+    \end{block}
+\end{frame}
+
+\begin{frame}{Q\&A: Alternative Approaches Without Permutation Tests}
+    \begin{alertblock}{Question}
+        Are there methods to test conditional independence without using permutation tests?
+    \end{alertblock}
+
+    \begin{block}{Answer: Alternative Approaches (from Bibliographic Notes)}
+        \begin{enumerate}
+            \item \textbf{Conditional Chatterjee's correlation} (Azadkia \& Chatterjee, 2021)
+                  \begin{itemize}
+                      \item Asymptotically valid, no smoothness assumptions needed
+                  \end{itemize}
+            \item \textbf{Model-X framework} (Cand\`{e}s et al., 2018)
+                  \begin{itemize}
+                      \item Assumes knowledge of $P_{X|W}$
+                      \item Resample $X$ under the null using known conditional distribution
+                  \end{itemize}
+        \end{enumerate}
+    \end{block}
+\end{frame}
+
+\begin{frame}{Q\&A: Alternative Approaches Without Permutation Tests}
+    \begin{alertblock}{Question}
+        Are there methods to test conditional independence without using permutation tests?
+    \end{alertblock}
+
+    \begin{block}{Answer: Alternative Approaches (from Bibliographic Notes)}
+        \begin{enumerate}
+            \setcounter{enumi}{2}
+            \item \textbf{Knockoff filter} (Barber \& Cand\`{e}s, 2015)
+                  \begin{itemize}
+                      \item Uses ``pairwise exchangeability'' for FDR control
+                  \end{itemize}
+            \item \textbf{Generalized Covariance Measure} (Shah \& Peters, 2020)
+                  \begin{itemize}
+                      \item Uses residuals from regression of $X$ on $W$ and $Y$ on $W$
+                  \end{itemize}
+        \end{enumerate}
+    \end{block}
+\end{frame}
+
+\section{Testing Under Smoothness Assumptions}
+
+\begin{frame}{Escaping the Hardness Result}
+    \begin{block}{The Dilemma}
+        \begin{itemize}
+            \item Distribution-free: Valid for \textit{all} $P \in \calP_{X \indep Y | W}$
+            \item But: No power for continuous $W$!
+        \end{itemize}
+    \end{block}
+
+    \begin{block}{Solution: Restrict the Null Hypothesis}
+        \begin{itemize}
+            \item Add a \textbf{smoothness assumption} on the conditional distribution
+            \item Control Type I error against a \textit{smaller} class of nulls
+            \item Allows nontrivial power while maintaining (approximate) validity
+        \end{itemize}
+    \end{block}
+\end{frame}
+
+\begin{frame}{Smoothness Assumption}
+    \begin{block}{Lipschitz Condition (Equation 13.7)}
+        Assume the map $w \mapsto P_{X|W}(\cdot | w)$ is $L$-Lipschitz w.r.t. Hellinger distance:
+        $$\dH(P_{X|W}(\cdot | w), P_{X|W}(\cdot | w')) \leq L \|w - w'\|$$
+        for all $w, w' \in \calW$.
+    \end{block}
+\end{frame}
+
+\begin{frame}{Smoothness Assumption}
+    \begin{block}{Hellinger Distance}
+        For distributions $P_1, P_2$ with densities $f_1, f_2$:
+        $$\dH(P_1, P_2) = \left(\frac{1}{2}\int_\calX \left(\sqrt{f_1(x)} - \sqrt{f_2(x)}\right)^2 d\mu(x)\right)^{1/2}$$
+    \end{block}
+
+    \begin{block}{Restricted Null}
+        $$\calP^L_{X \indep Y | W} = \{P \in \calP_{X \indep Y | W} : \text{(13.7) holds with constant } L\}$$
+    \end{block}
+\end{frame}
+
+\begin{frame}{Binned Local Permutation Test}
+    \begin{block}{Key Idea}
+        \begin{itemize}
+            \item Partition $\calW$ into bins: $\calW = \cup_k \calW_k$
+            \item Bin diameter bounded: $\max_k \sup_{w, w' \in \calW_k} \|w - w'\| \leq h$
+        \end{itemize}
+    \end{block}
+
+    \begin{block}{Allowed Permutations}
+        $\Sn^{\text{bin}}(\mathbf{W}) = \{\sigma \in \Sn : W_{\sigma(i)} \text{ and } W_i \text{ are in the same bin for all } i\}$
+    \end{block}
+
+    \begin{block}{Test Definition (Equation 13.8)}
+        \begin{align*}
+             & \psi(\mathbf{X}, \mathbf{Y}, \mathbf{W})                                                                                                                                                                     \\
+             & := \indicator{\frac{1}{|\Sn^{\text{bin}}(\mathbf{W})|}\sum_{\sigma \in \Sn^{\text{bin}}(\mathbf{W})} \indicator{T(X_\sigma, \mathbf{Y}, \mathbf{W}) \geq T(\mathbf{X}, \mathbf{Y}, \mathbf{W})} \leq \alpha}
+        \end{align*}
+    \end{block}
+\end{frame}
+
+\begin{frame}{Theorem 13.4: Validity of Binned Test}
+    \begin{block}{Theorem 13.4}
+        Fix any $T: (\calX \times \calY \times \calW)^n \to \mathbb{R}$. Let $(X_i, Y_i, W_i)_{i \in [n]} \stackrel{\text{i.i.d.}}{\sim} P$.
+
+        For any partition with $\max_k \sup_{w, w' \in \calW_k} \|w - w'\| \leq h$:
+        $$\mathbb{P}_P(\psi(\mathbf{X}, \mathbf{Y}, \mathbf{W}) = 1) \leq \alpha + Lh\sqrt{2n} \quad \text{for all } P \in \calP^L_{X \indep Y | W}$$
+    \end{block}
+
+    \begin{itemize}
+        \item Type I error: $\alpha + Lh\sqrt{2n}$ (not exactly $\alpha$)
+        \item Choose bin size $h = o(n^{-1/2})$ $\Rightarrow$ nearly valid test
+        \item Trade-off: smaller $h$ = more valid, but fewer permutations = less power
+    \end{itemize}
+\end{frame}
+
+\begin{frame}{Proof Sketch: Theorem 13.4}
+    \begin{enumerate}
+        \item Construct Auxiliary Distribution $\tilde{P}$
+              \begin{itemize}
+                  \item Express $P$ as mixture: $P = \sum_k \pi_k \cdot P^{(k)}$ where $\pi_k = \mathbb{P}(W \in \calW_k)$
+                  \item Define $\tilde{P} = \sum_k \pi_k \cdot (P_X^{(k)} \times P_{(Y,W)}^{(k)})$
+                  \item Under $\tilde{P}$: $X \indep (Y, W) \mid K$ where $K = k(W)$ (bin index)
+              \end{itemize}
+
+        \item $\tilde{P}$ Satisfies Conditional Independence
+              \begin{itemize}
+                  \item By construction: $X \indep (Y, W) \mid K$ under $\tilde{P}$
+                  \item Local permutation test with discrete confounder $K$ is \textbf{exactly valid}
+                  \item $\Rightarrow \mathbb{P}_{\tilde{P}}(\psi = 1) \leq \alpha$
+              \end{itemize}
+    \end{enumerate}
+\end{frame}
+
+\begin{frame}{Proof Sketch: Theorem 13.4}
+    \begin{enumerate}
+        \setcounter{enumi}{2}
+        \item Bound Distance Between $P$ and $\tilde{P}$
+
+              Using smoothness assumption and Hellinger distance properties:
+              $$\dH(P_{X|W}(\cdot|w), P_X^{(k)}) \leq Lh \quad \text{for all } w \in \calW_k$$
+
+              This gives:
+              $$\dH^2(P, \tilde{P}) \leq (Lh)^2$$
+
+        \item Extend to $n$ Samples
+              \begin{itemize}
+                  \item Subadditivity of squared Hellinger distance: $\dH^2(P^n, \tilde{P}^n) \leq n(Lh)^2$
+                  \item Total variation bound: $\dTV(P^n, \tilde{P}^n) \leq \sqrt{2}\dH(P^n, \tilde{P}^n) \leq Lh\sqrt{2n}$
+              \end{itemize}
+
+              Therefore:
+              $$\mathbb{P}_P(\psi = 1) \leq \mathbb{P}_{\tilde{P}}(\psi = 1) + Lh\sqrt{2n} \leq \alpha + Lh\sqrt{2n}$$
+    \end{enumerate}
+\end{frame}
+
+\begin{frame}{Q\&A: Hellinger Distance Convexity}
+    \begin{alertblock}{Question}
+        In the proof of Theorem 13.4, it mentions that $\dH(\cdot,\cdot)$ is convex in each argument. I believe $\dH^2(\cdot,\cdot)$ is convex, but $\dH(\cdot,\cdot)$ itself is not. Is my understanding correct?
+    \end{alertblock}
+
+    \begin{block}{Answer}
+        \begin{itemize}
+            \item $\dH^2(P, Q)$ is \textbf{convex} in each argument (jointly convex)
+            \item $\dH(P, Q)$ is generally \textbf{not convex}
+            \item What the proof actually uses (Equation 13.9):
+                  $$\dH(P_{X|W}(\cdot|w), P_X^{(k)}) \leq Lh$$
+            \item This follows from $P_X^{(k)}$ being a convex combination, using $\dH^2$ convexity and Jensen's inequality
+            \item The proof logic is correct; $\dH^2$ convexity is the key property
+        \end{itemize}
+    \end{block}
+\end{frame}
+
+\begin{frame}{Q\&A: Kernel Blurring for Continuous $W$?}
+    \begin{alertblock}{Question}
+        The local permutation test faces issues when $W$ is continuous, similar to Chapter 11. Can kernel-based blurring techniques from Chapter 11 be applied here?
+    \end{alertblock}
+
+    \begin{block}{Answer}
+        \begin{itemize}
+            \item Chapter 11's blurring: Smooths the target $Y$ to avoid hardness
+            \item Chapter 13's binning: Discretizes $W$ to enable testing
+
+        \end{itemize}
+    \end{block}
+\end{frame}
+
+\begin{frame}{Q\&A: Kernel Blurring for Continuous $W$?}
+    \begin{alertblock}{Question}
+        The local permutation test faces issues when $W$ is continuous, similar to Chapter 11. Can kernel-based blurring techniques from Chapter 11 be applied here?
+    \end{alertblock}
+
+    \begin{block}{Answer}
+        \begin{itemize}
+            \item \textbf{Kernel-based approaches are possible}:
+                  \begin{itemize}
+                      \item Weighted permutations among data points with similar $W$ values
+                      \item Kernel $K(w, w')$ determines permutation probabilities
+                      \item See: Sen et al. (2017), Kim et al. (2022)
+                  \end{itemize}
+            \item Key trade-off: More permutations $\Leftrightarrow$ larger approximation error
+            \item Both binning and kernel methods aim to approximate discrete case
+        \end{itemize}
+    \end{block}
+\end{frame}
+
+\section{Summary}
+
+\begin{frame}{Connections to Other Chapters}
+    \begin{table}
+        \small
+        \begin{tabular}{|l|c|c|}
+            \hline
+            \textbf{Topic}                       & \textbf{Discrete} & \textbf{Continuous} \\
+            \hline
+            Test-conditional coverage (Ch 4)     & Possible          & Hard                \\
+            \hline
+            Distribution-free regression (Ch 11) & Possible          & Hard                \\
+            \hline
+            ECE calibration (Ch 12)              & Estimable         & Not estimable       \\
+            \hline
+            Conditional indep. testing (Ch 13)   & Valid test        & No power            \\
+            \hline
+        \end{tabular}
+    \end{table}
+
+    \begin{block}{Unifying Theme}
+        \begin{itemize}
+            \item \textbf{Discrete setting}: Repeated observations enable inference
+            \item \textbf{Continuous setting}: Fundamental impossibility results
+            \item \textbf{Smoothness assumptions}: Bridge between the two
+            \item \textbf{Binning}: Convert continuous to approximately discrete
+        \end{itemize}
+    \end{block}
+\end{frame}
+
+\begin{frame}\frametitle{}
+    \vfill
+    \begin{center}
+        \begin{Huge}Thank you!\end{Huge}
+    \end{center}
+    \vfill
+\end{frame}
+
+\begin{frame}[t, allowframebreaks]\frametitle{References}
+    \nocite{Angelopoulos2024-pf}
+    \bibliography{ref}
+\end{frame}
+
+\end{document}
