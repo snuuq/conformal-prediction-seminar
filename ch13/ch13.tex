@@ -24,7 +24,7 @@
 \institute{
     Uncertainty Quantification Lab\\
     Seoul National University}
-\date{January 13th, 2026}
+\date{January 12th, 2026}
 
 {
     \begin{frame}[plain]
@@ -195,12 +195,20 @@
     \end{block}
 \end{frame}
 
-\begin{frame}{Local Permutation Test: Definition}
+\begin{frame}{Local Permutation Test: Permutation}
+    \begin{center}
+        \begin{figure}
+            \includegraphics[width = 5cm]{images/fig-1-local-permu.png}
+        \end{figure}
+    \end{center}
+    \small Figure 1: Visualization of a dataset with a discrete confounder along with a local permutation of the covariate \cite{Angelopoulos2024-pf}
     \begin{block}{Allowed Permutations}
         Define the set of permutations that \textbf{preserve $W$ values}:
         $$\Sn(\mathbf{W}) = \{\sigma \in \Sn : W_{\sigma(i)} = W_i \text{ for all } i \in [n]\}$$
     \end{block}
+\end{frame}
 
+\begin{frame}{Local Permutation Test: Definition}
     \begin{block}{Test Definition (Equation 13.4)}
         \begin{align*}
              & \psi(\mathbf{X}, \mathbf{Y}, \mathbf{W})                                                                                                                                          \\
@@ -219,33 +227,11 @@
         Fix any test statistic $T: (\calX \times \calY \times \calW)^n \to \mathbb{R}$. Let $(X_i, Y_i, W_i)_{i \in [n]} \stackrel{\text{i.i.d.}}{\sim} P$. Then $\psi$ is a \textbf{valid test} of $H_{X \indep Y | W}$:
         $$\mathbb{P}_P(\psi(\mathbf{X}, \mathbf{Y}, \mathbf{W}) = 1) \leq \alpha \quad \text{for all } P \in \calP_{X \indep Y | W}$$
     \end{block}
-
-    \begin{block}{Key Points}
-        \begin{itemize}
-            \item \textbf{Distribution-free}: No assumptions on $P$ (beyond conditional independence)
-            \item \textbf{Test statistic-free}: Works for any choice of $T$
-            \item Proof uses same techniques as Chapter 2 (permutation test validity)
-        \end{itemize}
-    \end{block}
-\end{frame}
-
-\begin{frame}{Proof Sketch: Theorem 13.2}
-    \begin{enumerate}
-        \item Conditional on $\mathbf{W}$ and $\mathbf{Y}$
-
-              Under $H_0: X \indep Y \mid W$, conditioning on $(\mathbf{W}, \mathbf{Y})$:
-              $$X_1, \ldots, X_n \text{ are independent (but not identically distributed)}$$
-              with $X_i \sim P_{X|W}(\cdot | W_i)$.
-
-        \item Exchangeability Within Groups
-
-              For any $\sigma \in \Sn(\mathbf{W})$: since $W_{\sigma(i)} = W_i$,
-              $$(X_\sigma, \mathbf{Y}) \mid \mathbf{W} \stackrel{d}{=} (\mathbf{X}, \mathbf{Y}) \mid \mathbf{W}$$
-
-        \item Apply Permutation Test Logic
-
-              Average over permutations $\sigma \in \Sn(\mathbf{W})$ to get valid p-value.
-    \end{enumerate}
+    \begin{itemize}
+        \item \textbf{Distribution-free}: No assumptions on $P$ (beyond conditional independence)
+        \item \textbf{Test statistic-free}: Works for any choice of $T$
+        \item Proof uses same techniques as Chapter 2 (permutation test validity)
+    \end{itemize}
 \end{frame}
 
 \begin{frame}{When is the Local Permutation Test Powerful?}
@@ -267,6 +253,25 @@
     \begin{alertblock}{Critical Observation}
         If $W$ is \textbf{continuous}, all $W_i$'s are distinct a.s. $\Rightarrow$ \textbf{No power!}
     \end{alertblock}
+\end{frame}
+
+\begin{frame}{Proof Sketch: Theorem 13.2}
+    \begin{enumerate}
+        \item Conditional on $\mathbf{W}$ and $\mathbf{Y}$
+
+              Under $H_0: X \indep Y \mid W$, conditioning on $(\mathbf{W}, \mathbf{Y})$:
+              $$X_1, \ldots, X_n \text{ are independent (but not identically distributed)}$$
+              with $X_i \sim P_{X|W}(\cdot | W_i)$.
+
+        \item Exchangeability Within Groups
+
+              For any $\sigma \in \Sn(\mathbf{W})$: since $W_{\sigma(i)} = W_i$,
+              $$(X_\sigma, \mathbf{Y}) \mid \mathbf{W} \stackrel{d}{=} (\mathbf{X}, \mathbf{Y}) \mid \mathbf{W}$$
+
+        \item Apply Permutation Test Logic
+
+              Average over permutations $\sigma \in \Sn(\mathbf{W})$ to get valid p-value.
+    \end{enumerate}
 \end{frame}
 
 \begin{frame}{Q\&A: How is the Confounder $W$ Determined?}
