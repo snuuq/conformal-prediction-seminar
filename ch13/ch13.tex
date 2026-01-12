@@ -61,7 +61,7 @@
         \begin{itemize}
             \item No conditioning on any variable
             \item Does not account for confounding effects of $W$
-            \item \textbf{Easy} to test via permutation tests
+            \item \textbf{Easy} to test via permutation tests : \emph{Theorem 13.1}
         \end{itemize}
     \end{block}
 \end{frame}
@@ -71,8 +71,25 @@
         $$H_0: X \indep Y \mid W$$
         \begin{itemize}
             \item Must account for the confounder $W$
-            \item \textbf{Easy} when $W$ is discrete (local permutation test)
-            \item \textbf{Hard} (impossible) when $W$ is continuous (hardness result)
+            \item \textbf{Easy} when $W$ is discrete (local permutation test) : \emph{Theorem 13.2}
+            \item \textbf{Hard} (impossible) when $W$ is continuous (hardness result) : \emph{Theorem 13.3}
+        \end{itemize}
+    \end{block}
+\end{frame}
+
+\begin{frame}{Q\&A: How is the Confounder $W$ Determined?}
+    \begin{alertblock}{Question}
+        How is the confounder $W$ typically determined in practice? It seems like finding an appropriate $W$ would be important, and trivial confounders might also exist.
+    \end{alertblock}
+
+    \begin{block}{Answer}
+        \begin{itemize}
+            \item This chapter \textbf{assumes $W$ is given} --- identifying $W$ is a separate problem
+            \item In practice, $W$ selection is crucial:
+                  \begin{itemize}
+                      \item \textbf{Domain knowledge}: Prior understanding of causal relationships
+                      \item \textbf{Variable selection}: In high-dimensional settings, $W = X_{-j}$ (all other variables)
+                  \end{itemize}
         \end{itemize}
     \end{block}
 \end{frame}
@@ -120,13 +137,10 @@
         Under $H_0: X \indep Y$, permuting $X_i$'s while fixing $Y_i$'s doesn't change the distribution!
         $$(X_\sigma, \mathbf{Y}) \stackrel{d}{=} (\mathbf{X}, \mathbf{Y}) \quad \text{for all } \sigma \in \Sn$$
     \end{block}
-
-    \begin{block}{Notation}
-        \begin{itemize}
-            \item $\mathbf{X} = (X_1, \ldots, X_n)$, $\mathbf{Y} = (Y_1, \ldots, Y_n)$
-            \item $X_\sigma = (X_{\sigma(1)}, \ldots, X_{\sigma(n)})$ for $\sigma \in \Sn$
-        \end{itemize}
-    \end{block}
+    \begin{itemize}
+        \item $\mathbf{X} = (X_1, \ldots, X_n)$, $\mathbf{Y} = (Y_1, \ldots, Y_n)$
+        \item $X_\sigma = (X_{\sigma(1)}, \ldots, X_{\sigma(n)})$ for $\sigma \in \Sn$
+    \end{itemize}
 \end{frame}
 
 \begin{frame}{Theorem 13.1: Validity of the Permutation Test}
@@ -141,10 +155,20 @@
     \begin{block}{Proof Idea}
         \begin{itemize}
             \item Under $H_0$: $P = P_X \times P_Y$
-            \item Conditioning on $\mathbf{Y}$: $X_1, \ldots, X_n$ remain i.i.d. $\sim P_X$
-            \item Apply Theorem 2.4 (permutation test validity from Chapter 2)
+            \item Conditioning on $\mathbf{Y}$: $X_1, \ldots, X_n$ remain i.i.d. $\sim P_X \Rightarrow $ Checking $X_i$'s exchangeability.
         \end{itemize}
     \end{block}
+\end{frame}
+
+\begin{frame}{Recall: Permutation test for exchangeability}
+    \begin{block}{Recall: Theorem 2.4}
+        For any function $T: \mathcal{Z}^n \to \mathbb{R}$, the p-value $p$ defined as:
+        $$p:=\frac{\sum_{\sigma \in S_n}\indicator{T(\mathbf{X}_\sigma) \geq T(\mathbf{X})}}{n!}$$
+
+        satisfies $\mathbb{E}_P[p \leq \tau] \leq \tau$ for all $\tau \in [0,1]$ and $P \in \calP_{\text{exch}}$.
+    \end{block}
+
+    Plug-in $T \leftarrow T(\mathbf{X}, \mathbf{Y})$ into Theorem 2.4, conclued the proof.
 \end{frame}
 
 \begin{frame}{Q\&A: Alternative Test Statistics}
@@ -153,22 +177,30 @@
     \end{alertblock}
 
     \begin{block}{Answer: Alternative Test Statistics}
+        By Theorem 2.4, we can use any test statistic $T$ to construct a valid permutation test. Here are some examples:
         \begin{enumerate}
-            \item \textbf{Spearman's rank correlation}: $|\text{Corr}(\text{rank}(X), \text{rank}(Y))|$
+            \item \textbf{Spearman's rank correlation} \cite{Spearman1904}: $|\text{Corr}(\text{rank}(X), \text{rank}(Y))|$
                   \begin{itemize}
+                      \item rank is similar to order statistics' index
                       \item Robust to outliers, captures monotonic relationships
                   \end{itemize}
-            \item \textbf{Distance correlation} (Sz\'{e}kely et al., 2007)
+        \end{enumerate}
+    \end{block}
+\end{frame}
+
+\begin{frame}{Q\&A: Alternative Test Statistics}
+    \begin{block}{Answer: Alternative Test Statistics}
+        \begin{enumerate}
+            \setcounter{enumi}{1}
+            \item \textbf{Distance correlation} \cite{Szekely2007}
                   \begin{itemize}
+                      \item Using distance covariance $\mathcal{V}^2(X, Y) := ||f_{X,Y}(t, s) - f_X(t)f_Y(s) ||^2$
                       \item Detects nonlinear dependencies, equals zero iff independent
                   \end{itemize}
-            \item \textbf{HSIC} (Hilbert-Schmidt Independence Criterion)
+            \item \textbf{HSIC} (Hilbert-Schmidt Independence Criterion) \cite{Gretton2005}
                   \begin{itemize}
-                      \item Kernel-based measure of dependence
-                  \end{itemize}
-            \item \textbf{Mutual information estimators}
-                  \begin{itemize}
-                      \item Information-theoretic measure of dependence
+                      \item $HSIC(p_{xy}, \mathcal{F}, \mathcal{G}) := ||C_{xy}||^2_{HS}=\mathbb{E}_{x,x',y,y'}\bigl[k(x,x')\,l(y,y')\bigr] + \mathbb{E}_{x,x'}\bigl[k(x,x')\bigr]\mathbb{E}_{y,y'}\bigl[l(y,y')\bigr] - 2\mathbb{E}_{x,y}\Bigl[\mathbb{E}_{x'}\bigl[k(x,x')\bigr]\mathbb{E}_{y'}\bigl[l(y,y')\bigr]\Bigr]$
+                      \item RKHS-based measure of dependence
                   \end{itemize}
         \end{enumerate}
     \end{block}
@@ -266,53 +298,59 @@
         \item Exchangeability Within Groups
 
               For any $\sigma \in \Sn(\mathbf{W})$: since $W_{\sigma(i)} = W_i$,
-              $$(X_\sigma, \mathbf{Y}) \mid \mathbf{W} \stackrel{d}{=} (\mathbf{X}, \mathbf{Y}) \mid \mathbf{W}$$
-
-        \item Apply Permutation Test Logic
-
-              Average over permutations $\sigma \in \Sn(\mathbf{W})$ to get valid p-value.
+              $$(X_\sigma, \mathbf{Y}) \mid \mathbf{W} \stackrel{d}{=} (\mathbf{X}, \mathbf{Y}) \mid \mathbf{W}\cdots (13.6)$$
     \end{enumerate}
 \end{frame}
 
-\begin{frame}{Q\&A: How is the Confounder $W$ Determined?}
-    \begin{alertblock}{Question}
-        How is the confounder $W$ typically determined in practice? It seems like finding an appropriate $W$ would be important, and trivial confounders might also exist.
-    \end{alertblock}
+\begin{frame}{Proof Sketch: Theorem 13.2}
+    \begin{enumerate}
+        \setcounter{enumi}{2}
+        \item Using quantile technique
 
-    \begin{block}{Answer}
-        \begin{itemize}
-            \item This chapter \textbf{assumes $W$ is given} --- identifying $W$ is a separate problem
-            \item In practice, $W$ selection is crucial:
-                  \begin{itemize}
-                      \item \textbf{Domain knowledge}: Prior understanding of causal relationships
-                      \item \textbf{Variable selection}: In high-dimensional settings, $W = X_{-j}$ (all other variables)
-                      \item \textbf{Causal discovery}: Learn DAG structure to identify confounders
-                  \end{itemize}
-            \item Wrong $W$ choice $\Rightarrow$ spurious association or missed association
-            \item Finding ``appropriate $W$'' is a central topic in \textbf{causal inference}
-        \end{itemize}
-    \end{block}
+              We can check that $\Sn(\mathbf{w}) = \{\sigma \circ\sigma ' : \sigma ' \in \Sn(\mathbf{w})\}$ for any $\sigma \in \Sn(\mathbf{w})$. So,
+              $$\hat{q}(\mathbf{x}_\sigma, \mathbf{y}, \mathbf{w}) = \text{Quantile}(T((\mathbf{x}_\sigma)_{\sigma'}, \mathbf{y}, \mathbf{w})_{\sigma' \in \Sn(\mathbf{w})}; 1- \alpha) = \hat{q}(\mathbf{x}, \mathbf{y}, \mathbf{w})$$
+
+              Therefore,
+
+              {\small
+                      \begin{align*}
+                           & \frac{1}{\lvert S_n(\mathbf{w}) \rvert} \sum_{\sigma \in S_n(\mathbf{w})} \mathbf{1}\{\psi(x_\sigma, y, \mathbf{w}) = 1\}                                                                                                                      \\
+                           & = \frac{1}{\lvert S_n(\mathbf{w}) \rvert} \sum_{\sigma \in S_n(\mathbf{w})} \mathbf{1}\{T(x_\sigma, y, \mathbf{w}) > \hat{q}(x, y, \mathbf{w})\}                                                                                               \\
+                           & = \frac{1}{\lvert S_n(\mathbf{w}) \rvert} \sum_{\sigma \in S_n(\mathbf{w})} \mathbf{1}\Bigl\{ T(x_\sigma, y, \mathbf{w}) > \operatorname{Quantile}\bigl((T(x_{\sigma'}, y, \mathbf{w}))_{\sigma' \in S_n(\mathbf{w})}; 1-\alpha \bigr) \Bigr\} \\
+                           & \le \alpha
+                      \end{align*}}
+    \end{enumerate}
+\end{frame}
+
+\begin{frame}{Proof Sketch: Theorem 13.2}
+    \begin{enumerate}
+        \setcounter{enumi}{3}
+        \item (13.6) implies that $$\mathbb{P}_{P}\bigl(\psi(\mathbf{X}, \mathbf{Y}, \mathbf{W}) = 1 \mid \mathbf{W}\bigr)
+                  =
+                  \mathbb{P}_{P}\bigl(\psi(\mathbf{X}_{\sigma}, \mathbf{Y}, \mathbf{W}) = 1 \mid \mathbf{W}\bigr)$$
+              holds for each $\sigma \in \Sn(\mathbf{W})$. Taking an average over $\sigma \in \Sn(\mathbf{W})$,
+              \begin{align*}
+                   & \mathbb{P}_{P}\bigl(\psi(\mathbf{X}, \mathbf{Y}, \mathbf{W}) = 1 \mid \mathbf{W}\bigr) \\
+                   & = \frac{1}{\lvert \Sn(\mathbf{W}) \rvert} \sum_{\sigma \in \Sn(\mathbf{W})}
+                  \mathbb{P}_{P}\bigl(\psi(X_{\sigma}, \mathbf{Y}, \mathbf{W}) = 1 \mid \mathbf{W}\bigr)    \\
+                   & = \mathbb{E}_{\mathbb{P}}\!\left[
+                      \left.\frac{1}{\lvert \Sn(\mathbf{W}) \rvert}
+                      \sum_{\sigma \in \Sn(\mathbf{W})}
+                      \mathbf{1}\bigl\{\psi(X_{\sigma}, \mathbf{Y}, \mathbf{W}) = 1\bigr\}
+                      \,\right|\, \mathbf{W}
+                      \right] \leq \alpha
+              \end{align*}
+    \end{enumerate}
 \end{frame}
 
 \section{Hardness of Conditional Independence Testing}
 
 \begin{frame}{The Problem with Continuous $W$}
-    \begin{block}{Continuous Confounder Challenge}
-        When $W$ has a \textbf{nonatomic} (continuous) distribution:
-        \begin{itemize}
-            \item $\mathbb{P}(W_i = W_j) = 0$ for $i \neq j$
-            \item No two data points share the same $W$ value
-            \item Local permutation test has no power
-        \end{itemize}
-    \end{block}
-
-    \begin{alertblock}{Question}
-        Can we design \textit{any} valid test with nontrivial power for continuous $W$?
-    \end{alertblock}
-
-    \begin{block}{Answer: NO!}
-        Theorem 13.3 shows this is \textbf{impossible} in a distribution-free setting.
-    \end{block}
+    When $W$ has a \textbf{nonatomic} (continuous) distribution: $\mathbb{P}(W_i = W_j) = 0$ for $i \neq j$
+    \begin{itemize}
+        \item No two data points share the same $W$ value
+        \item Local permutation test has no power
+    \end{itemize}
 \end{frame}
 
 \begin{frame}{Theorem 13.3: Hardness Result}
