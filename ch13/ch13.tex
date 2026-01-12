@@ -359,7 +359,7 @@
         $$\mathbb{P}_P(\psi(\mathbf{X}, \mathbf{Y}, \mathbf{W}) = 1) \leq \alpha \quad \text{for all } P \in \calP_{X \indep Y | W}$$
 
         Then the \textbf{power} of the test is not better than random for any $P$ with $P_W$ nonatomic:
-        $$\mathbb{P}_P(\psi(\mathbf{X}, \mathbf{Y}, \mathbf{W}) = 1) \leq \alpha \quad \text{for \textbf{all} } P \text{ with } P_W \text{ nonatomic}$$
+        $$\mathbb{P}_P(\psi(\mathbf{X}, \mathbf{Y}, \mathbf{W}) = 1) \leq \alpha \text{ for \textbf{all} } P \in \calP_{(X ,Y , W)} \text{ with } P_W \text{ nonatomic}$$
     \end{block}
 
     \begin{alertblock}{Interpretation}
@@ -375,29 +375,33 @@
     \begin{enumerate}
         \item Fix arbitrary sequence $(X^{(i)}, Y^{(i)}, W^{(i)})_{i \in [M]}$ with distinct $W^{(i)}$
         \item Empirical distribution $\hatP_M = \frac{1}{M}\sum_{i=1}^M \delta_{(X^{(i)}, Y^{(i)}, W^{(i)})}$
-        \item Under $\hatP_M$: $X, Y$ are deterministic functions of $W$
-        \item $\Rightarrow$ Trivially $X \indep Y \mid W$ under $\hatP_M$!
+        \item Under $\hatP_M$: $X, Y$ are deterministic functions of $W\Rightarrow$ Trivially $X \indep Y \mid W$ under $\hatP_M$!
         \item Valid test must have $\mathbb{P}_{\hatP_M}(\psi = 1) \leq \alpha$
-        \item By Lemma 4.15: this extends to any $P$ with nonatomic $P_W$
+        \item By Sample-Resample Method: this extends to any $P$ with nonatomic $P_W$
     \end{enumerate}
 \end{frame}
 
-\begin{frame}{Connection to Previous Hardness Results}
-    \begin{block}{Recurring Theme in the Book}
-        \textbf{Discrete case}: Distribution-free inference is possible (Chapter 4.3, 11.3, 13.2)
-
-        \textbf{Continuous case}: Distribution-free inference faces fundamental limits (Chapter 4.4, 11.4, 13.3)
+\begin{frame}{Sample-Resample Method}
+    \begin{block}{Recall: Lemma 4.15}
+        Let $P$ be a distribution on $\mathcal{Z}$, and let $m, M \geq 1$. Let $Q$ denote the distribution on $\mathcal{Z}^m$ obtained by the following process to generate $(Z_1, \cdots, Z_m)$:
+        \begin{enumerate}
+            \item Sample $(Z^{(1)}, \cdots, Z^{(M)})$ i.i.d. from $P$, and define the empirical distribution $\hatP_M = \frac{1}{M}\sum_{i=1}^M \delta_{Z^{(i)}}$
+            \item Resample $(Z_1, \cdots, Z_m)$ i.i.d. from $\hatP_M$
+        \end{enumerate}
+        Then
+        $$d_{TV}(P^m, Q) \leq \frac{m(m-1)}{2M}$$
     \end{block}
+\end{frame}
 
-    \begin{block}{Same Proof Technique}
-        \begin{itemize}
-            \item Chapter 4: Test-conditional coverage
-            \item Chapter 11: Distribution-free regression
-            \item Chapter 12: ECE calibration
-            \item Chapter 13: Conditional independence testing
-        \end{itemize}
-        All use the \textbf{sample-resample lemma} (Lemma 4.15)!
-    \end{block}
+\begin{frame}{Proof (5) Sketch: Theorem 13.3}
+    Construct $\mathbb{P}_{\hatP_M}$ by sampling the M data points i.i.d. from $P$ as Lemma 4.15, Sample $(X_1, Y_1, W_1), \cdots, (X_M, Y_M, W_M)$ i.i.d. from $\hatP_M$. So,
+    $$\mathbb{P}_{Q}(\psi = 1) \leq \alpha \text{ a.s.}$$
+    We also konw that $W^{(1)}, \cdots, W^{(M)}$ are distinct a.s.,
+    $$\mathbb{P}_{\hatP_M}(\psi = 1 | \hatP_M) \leq \alpha \text{ a.s.}$$
+    Using both inequality and Lemma 4.15,
+    $$\mathbb{P}_{P}(\psi = 1) \leq \alpha + \frac{n(n-1)}{2M}$$
+    and taking $M$ large to get desired result.
+
 \end{frame}
 
 \begin{frame}{Q\&A: Alternative Approaches Without Permutation Tests}
@@ -407,11 +411,11 @@
 
     \begin{block}{Answer: Alternative Approaches (from Bibliographic Notes)}
         \begin{enumerate}
-            \item \textbf{Conditional Chatterjee's correlation} (Azadkia \& Chatterjee, 2021)
+            \item \textbf{Conditional Chatterjee's correlation} \cite{Azadkia2021}
                   \begin{itemize}
                       \item Asymptotically valid, no smoothness assumptions needed
                   \end{itemize}
-            \item \textbf{Model-X framework} (Cand\`{e}s et al., 2018)
+            \item \textbf{Model-X framework} \cite{Candes2018}
                   \begin{itemize}
                       \item Assumes knowledge of $P_{X|W}$
                       \item Resample $X$ under the null using known conditional distribution
@@ -428,11 +432,11 @@
     \begin{block}{Answer: Alternative Approaches (from Bibliographic Notes)}
         \begin{enumerate}
             \setcounter{enumi}{2}
-            \item \textbf{Knockoff filter} (Barber \& Cand\`{e}s, 2015)
+            \item \textbf{Knockoff filter} \cite{Barber2015}
                   \begin{itemize}
                       \item Uses ``pairwise exchangeability'' for FDR control
                   \end{itemize}
-            \item \textbf{Generalized Covariance Measure} (Shah \& Peters, 2020)
+            \item \textbf{Generalized Covariance Measure} \cite{Shah2020}
                   \begin{itemize}
                       \item Uses residuals from regression of $X$ on $W$ and $Y$ on $W$
                   \end{itemize}
@@ -460,21 +464,19 @@
 \end{frame}
 
 \begin{frame}{Smoothness Assumption}
+    \begin{block}{Definition: Hellinger Distance}
+        For distributions $P_1, P_2$ with densities $f_1, f_2$:
+        $$\dH(P_1, P_2) := \left(\frac{1}{2}\int_\calX \left(\sqrt{f_1(x)} - \sqrt{f_2(x)}\right)^2 d\mu(x)\right)^{1/2}$$
+    \end{block}
+
+    \begin{block}{Restricted Null}
+        $$\calP^L_{X \indep Y | W} = \{P \in \calP_{X \indep Y | W} : L\text{-Lipschitz w.r.t. Hellinger distance}\}$$
+    \end{block}
+
     \begin{block}{Lipschitz Condition (Equation 13.7)}
         Assume the map $w \mapsto P_{X|W}(\cdot | w)$ is $L$-Lipschitz w.r.t. Hellinger distance:
         $$\dH(P_{X|W}(\cdot | w), P_{X|W}(\cdot | w')) \leq L \|w - w'\|$$
         for all $w, w' \in \calW$.
-    \end{block}
-\end{frame}
-
-\begin{frame}{Smoothness Assumption}
-    \begin{block}{Hellinger Distance}
-        For distributions $P_1, P_2$ with densities $f_1, f_2$:
-        $$\dH(P_1, P_2) = \left(\frac{1}{2}\int_\calX \left(\sqrt{f_1(x)} - \sqrt{f_2(x)}\right)^2 d\mu(x)\right)^{1/2}$$
-    \end{block}
-
-    \begin{block}{Restricted Null}
-        $$\calP^L_{X \indep Y | W} = \{P \in \calP_{X \indep Y | W} : \text{(13.7) holds with constant } L\}$$
     \end{block}
 \end{frame}
 
@@ -540,7 +542,9 @@
               $$\dH(P_{X|W}(\cdot|w), P_X^{(k)}) \leq Lh \quad \text{for all } w \in \calW_k$$
 
               This gives:
-              $$\dH^2(P, \tilde{P}) \leq (Lh)^2$$
+              $$
+                  \dH^2(P, \tilde{P}) = \mathbb{E}_P \left[ d_H^2(P_{X|W}(\cdot | W), P_X^{(k(W))}) \right] \leq (Lh)^2
+              $$
 
         \item Extend to $n$ Samples
               \begin{itemize}
@@ -561,12 +565,19 @@
     \begin{block}{Answer}
         \begin{itemize}
             \item $\dH^2(P, Q)$ is \textbf{convex} in each argument (jointly convex)
-            \item $\dH(P, Q)$ is generally \textbf{not convex}
-            \item What the proof actually uses (Equation 13.9):
-                  $$\dH(P_{X|W}(\cdot|w), P_X^{(k)}) \leq Lh$$
-            \item This follows from $P_X^{(k)}$ being a convex combination, using $\dH^2$ convexity and Jensen's inequality
-            \item The proof logic is correct; $\dH^2$ convexity is the key property
+            \item $\dH(P, Q)$ is generally \textbf{not convex} but \textbf{concave} in each argument
+            \item What the proof actually uses: $P_X^{(k)}$ is convex conbination of $P_{X|W}(\cdot|w)$
         \end{itemize}
+    \end{block}
+\end{frame}
+
+\begin{frame}{Q\&A: Hellinger Distance Convexity}
+    \begin{block}{Answer}
+        \begin{align*}
+            \dH(P_{X|W}(\cdot|w), P_X^{(k)}) & = \dH(P_{X|W}(\cdot|w), \sum_{w' \in \mathcal{W}_k} \lambda_{w'} P_{X|W}(\cdot | w'))           \\
+                                             & \leq \sum_{w' \in \mathcal{W}_k} \lambda_{w'} \cdot \dH(P_{X|W}(\cdot|w),  P_{X|W}(\cdot | w')) \\
+                                             & \leq Lh
+        \end{align*}
     \end{block}
 \end{frame}
 
@@ -574,33 +585,13 @@
     \begin{alertblock}{Question}
         The local permutation test faces issues when $W$ is continuous, similar to Chapter 11. Can kernel-based blurring techniques from Chapter 11 be applied here?
     \end{alertblock}
-
-    \begin{block}{Answer}
-        \begin{itemize}
-            \item Chapter 11's blurring: Smooths the target $Y$ to avoid hardness
-            \item Chapter 13's binning: Discretizes $W$ to enable testing
-
-        \end{itemize}
-    \end{block}
-\end{frame}
-
-\begin{frame}{Q\&A: Kernel Blurring for Continuous $W$?}
-    \begin{alertblock}{Question}
-        The local permutation test faces issues when $W$ is continuous, similar to Chapter 11. Can kernel-based blurring techniques from Chapter 11 be applied here?
-    \end{alertblock}
-
-    \begin{block}{Answer}
-        \begin{itemize}
-            \item \textbf{Kernel-based approaches are possible}:
-                  \begin{itemize}
-                      \item Weighted permutations among data points with similar $W$ values
-                      \item Kernel $K(w, w')$ determines permutation probabilities
-                      \item See: Sen et al. (2017), Kim et al. (2022)
-                  \end{itemize}
-            \item Key trade-off: More permutations $\Leftrightarrow$ larger approximation error
-            \item Both binning and kernel methods aim to approximate discrete case
-        \end{itemize}
-    \end{block}
+    Under smoothness assumption, using Hellinger distance is similar to bulrring.
+    \begin{itemize}
+        \item Blurring : Making target $\mu_{P}(x)$ as smoothed/blurred version (weighted expectation):
+              $$\hat{\mu}_P(x) = \frac{\mathbb{E}\left[\mu_P(X) \cdot H(x, X)\right]}{\mathbb{E}\left[H(x, X)\right]}$$
+        \item Hellinger distance : Making conditional distribution $P_{X|W}(\cdot | w)$ as Binned weighted Expectation distribution:
+              $$P_X^{(k)} = \int_{\mathcal{W}_k}P_{X|W}(\cdot | w')d\mu_k(w')$$
+    \end{itemize}
 \end{frame}
 
 \section{Summary}
