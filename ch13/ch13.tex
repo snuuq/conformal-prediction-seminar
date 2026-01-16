@@ -533,15 +533,41 @@
     \end{enumerate}
 \end{frame}
 
-\begin{frame}{Proof Sketch: Theorem 13.4}
+\begin{frame}{Q\&A: Hellinger Distance Convexity}
+    \begin{alertblock}{Question}
+        In the proof of Theorem 13.4, it mentions that $\dH(\cdot,\cdot)$ is convex in each argument. I believe $\dH^2(\cdot,\cdot)$ is convex, but $\dH(\cdot,\cdot)$ itself is not. Is my understanding correct?
+    \end{alertblock}
+
+    \begin{block}{Answer}
+        \begin{itemize}
+            \item $\dH(P, Q)$ is generally \textbf{not convex}
+                  \begin{itemize}
+                      \item Let $\begin{bmatrix}a\\b\end{bmatrix}$ denotes distribution s.t. $\mathbb{P}(\cdot = 0) = a$ and $\mathbb{P}(\cdot = 1) = b$
+                      \item $\dH(\begin{bmatrix}\alpha\\1-\alpha\end{bmatrix}, \begin{bmatrix}1\\0\end{bmatrix})=\sqrt{1-\sqrt{\alpha}}$
+                      \item $\alpha\dH(\begin{bmatrix}1\\0\end{bmatrix}, \begin{bmatrix}1\\0\end{bmatrix}) + (1-\alpha)\dH(\begin{bmatrix}0\\1\end{bmatrix}, \begin{bmatrix}1\\0\end{bmatrix})=1-\alpha$
+                      \item But take $\alpha = \frac34$, $\sqrt{1-\sqrt{\alpha}} \not\leq 1-\alpha$
+                  \end{itemize}
+        \end{itemize}
+    \end{block}
+\end{frame}
+
+\begin{frame}{Q\&A: Hellinger Distance Convexity}
+    \begin{block}{Answer}
+        Just using $\dH^2$'s convexity:
+        \begin{align*}
+            \dH^2(P_{X|W}(\cdot|w), P_X^{(k)}) & = \dH^2(P_{X|W}(\cdot|w), \sum_{w' \in \mathcal{W}_k} \lambda_{w'} P_{X|W}(\cdot | w'))           \\
+                                               & \leq \sum_{w' \in \mathcal{W}_k} \lambda_{w'} \cdot \dH^2(P_{X|W}(\cdot|w),  P_{X|W}(\cdot | w')) \\
+                                               & \leq (Lh)^2
+        \end{align*}
+    \end{block}
+\end{frame}
+
+\begin{frame}{Proof Sketch: Theorem 13.4 (continued)}
     \begin{enumerate}
         \setcounter{enumi}{2}
         \item Bound Distance Between $P$ and $\tilde{P}$
 
               Using smoothness assumption and Hellinger distance properties:
-              $$\dH(P_{X|W}(\cdot|w), P_X^{(k)}) \leq Lh \quad \text{for all } w \in \calW_k$$
-
-              This gives:
               $$
                   \dH^2(P, \tilde{P}) = \mathbb{E}_P \left[ d_H^2(P_{X|W}(\cdot | W), P_X^{(k(W))}) \right] \leq (Lh)^2
               $$
@@ -555,30 +581,6 @@
               Therefore:
               $$\mathbb{P}_P(\psi = 1) \leq \mathbb{P}_{\tilde{P}}(\psi = 1) + Lh\sqrt{2n} \leq \alpha + Lh\sqrt{2n}$$
     \end{enumerate}
-\end{frame}
-
-\begin{frame}{Q\&A: Hellinger Distance Convexity}
-    \begin{alertblock}{Question}
-        In the proof of Theorem 13.4, it mentions that $\dH(\cdot,\cdot)$ is convex in each argument. I believe $\dH^2(\cdot,\cdot)$ is convex, but $\dH(\cdot,\cdot)$ itself is not. Is my understanding correct?
-    \end{alertblock}
-
-    \begin{block}{Answer}
-        \begin{itemize}
-            \item $\dH^2(P, Q)$ is \textbf{convex} in each argument (jointly convex)
-            \item $\dH(P, Q)$ is generally \textbf{not convex} but \textbf{concave} in each argument
-            \item What the proof actually uses: $P_X^{(k)}$ is convex conbination of $P_{X|W}(\cdot|w)$
-        \end{itemize}
-    \end{block}
-\end{frame}
-
-\begin{frame}{Q\&A: Hellinger Distance Convexity}
-    \begin{block}{Answer}
-        \begin{align*}
-            \dH(P_{X|W}(\cdot|w), P_X^{(k)}) & = \dH(P_{X|W}(\cdot|w), \sum_{w' \in \mathcal{W}_k} \lambda_{w'} P_{X|W}(\cdot | w'))           \\
-                                             & \leq \sum_{w' \in \mathcal{W}_k} \lambda_{w'} \cdot \dH(P_{X|W}(\cdot|w),  P_{X|W}(\cdot | w')) \\
-                                             & \leq Lh
-        \end{align*}
-    \end{block}
 \end{frame}
 
 \begin{frame}{Q\&A: Kernel Blurring for Continuous $W$?}
