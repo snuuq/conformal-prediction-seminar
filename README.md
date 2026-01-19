@@ -1,9 +1,11 @@
 # Conformal Prediction Seminar
 > 2025 Fall seminar on "[Theoretical Foundations of Conformal Prediction](https://arxiv.org/abs/2411.11824)"
 
+> 이 레포지토리는 2026. 01. 12. 에 종료된 세미나의 아카이브입니다.
+
 ## 일정표
 
-학기중엔 격주 월요일 저녁 5시에 진행됩니다.
+학기중엔 격주 월요일 저녁 5시에 진행되었습니다.
 
 | 주차  | 일자       | 내용                                                     | 담당자 |
 | --- | -------- | ------------------------------------------------------ | --- |
